@@ -108,7 +108,7 @@ router.patch('/:id/restock', auth, async (req, res) => {
     const cost = unit_cost ?? product.cost_price;
     const { rows: purchases } = await client.query(
       `INSERT INTO supplier_purchase (supplier_id,product_id,quantity,unit_cost,total_cost,purchased_by,notes)
-       VALUES ($1,$2,$3,$4,($3::numeric * $4::numeric),$5,$6) RETURNING purchase_id,total_cost`,
+       VALUES ($1,$2,$3,$4,($3::integer::numeric * $4::numeric),$5,$6) RETURNING purchase_id,total_cost`,
       [supplierId, req.params.id, quantity, cost, req.user.username, notes || null]
     );
     await client.query('UPDATE product SET supplier_id=$1 WHERE product_id=$2', [supplierId, req.params.id]);
