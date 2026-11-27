@@ -51,9 +51,6 @@ export default function ManagerDashboard() {
         {/* Current Employee Duties */}
         <div className="card">
           <div className="section-title">👥 What Employees Are Doing Now</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            Employee LEFT JOIN Duty_Assignment (active) + Duty
-          </p>
           <div className="table-wrap">
             <table>
               <thead><tr><th>Employee</th><th>Role</th><th>Duty</th><th>Shift</th></tr></thead>
@@ -90,9 +87,6 @@ export default function ManagerDashboard() {
         {/* Low Stock */}
         <div className="card" style={{ borderColor: lowStock.length>0?'#fca5a5':'#86efac' }}>
           <div className="section-title">⚠️ Low Stock Alert</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            WHERE quantity_in_stock &lt;= reorder_level
-          </p>
           {lowStock.length === 0 ? (
             <div className="alert alert-success">✅ All stock levels are healthy</div>
           ) : (

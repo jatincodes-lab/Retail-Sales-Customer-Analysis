@@ -48,9 +48,6 @@ export default function Dashboard() {
             Products at or below reorder level
           </span>
         </div>
-        <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-          SELECT * FROM vw_low_stock — WHERE quantity_in_stock &lt;= reorder_level
-        </p>
         {lowStock.length === 0 ? (
           <div className="alert alert-success">✅ All products are well stocked — no items below reorder level</div>
         ) : (
@@ -83,9 +80,6 @@ export default function Dashboard() {
         {/* Revenue by Category */}
         <div className="card">
           <div className="section-title">💹 Revenue by Category</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            JOIN Sale_Item + Product + Category → GROUP BY + SUM()
-          </p>
           {catRevenue.length === 0 ? (
             <p style={{ color:'#94a3b8' }}>No sales yet</p>
           ) : (
@@ -106,9 +100,6 @@ export default function Dashboard() {
         {/* Top Products */}
         <div className="card">
           <div className="section-title">🏆 Top Selling Products</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            GROUP BY + SUM() + ORDER BY + LIMIT 5
-          </p>
           {topProducts.length === 0 ? (
             <p style={{ color:'#94a3b8' }}>No sales yet</p>
           ) : (
@@ -131,10 +122,7 @@ export default function Dashboard() {
       <div className="grid-2" style={{ marginBottom:20 }}>
         {/* Top Customers */}
         <div className="card">
-          <div className="section-title">⭐ Top Customers — vw_customer_spend</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            VIEW: Customer JOIN Sale → GROUP BY + SUM() + COUNT()
-          </p>
+          <div className="section-title">⭐ Top Customers</div>
           {topCustomers.length === 0 ? (
             <p style={{ color:'#94a3b8' }}>No registered customer purchases yet</p>
           ) : (
@@ -155,10 +143,7 @@ export default function Dashboard() {
 
         {/* Recent Sales */}
         <div className="card">
-          <div className="section-title">🧾 Recent Sales — vw_sales_summary</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            VIEW: Sale LEFT JOIN Customer → COALESCE + COUNT() + GROUP BY
-          </p>
+          <div className="section-title">🧾 Recent Sales</div>
           <div className="table-wrap">
             <table>
               <thead><tr><th>#</th><th>Customer</th><th>Items</th><th>Total</th></tr></thead>

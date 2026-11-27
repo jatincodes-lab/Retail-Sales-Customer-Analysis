@@ -326,12 +326,9 @@ export default function Employees() {
         <>
           <div style={{ marginBottom:16 }}>
             <div style={{ fontWeight:700, fontSize:15, marginBottom:4 }}>
-              💰 Salary Summary — vw_salary_summary
+              💰 Salary Summary
             </div>
-            <p style={{ color:'#64748b', fontSize:11, fontFamily:'monospace' }}>
-              VIEW: Employee LEFT JOIN Salary_Payment → SUM() + COUNT() + MAX()
-            </p>
-          </div>
+            </div>
 
           {/* Total payroll stat */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fill,minmax(200px,1fr))', gap:12, marginBottom:20 }}>

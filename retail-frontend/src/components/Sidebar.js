@@ -69,7 +69,7 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-logo">
         <span className="brand-mark"><NavIcon name="store" /></span>
-        <span className="brand-copy"><strong>RetailMS</strong><small>Store workspace</small></span>
+        <span className="brand-copy"><strong>RetailIQ</strong><small>Store workspace</small></span>
       </div>
 
       <nav className="sidebar-nav" aria-label="Main navigation">

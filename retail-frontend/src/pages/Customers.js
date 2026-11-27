@@ -160,9 +160,6 @@ export default function Customers() {
       {tab==='top' && (
         <div className="card" style={{ marginBottom:16 }}>
           <div className="section-title">⭐ Above Average Spenders</div>
-          <p style={{ color:'#64748b', fontSize:11, marginBottom:12, fontFamily:'monospace' }}>
-            WHERE total_spent &gt; (SELECT AVG(total_amount) FROM Sale WHERE customer_id IS NOT NULL)
-          </p>
           <table><thead><tr><th>Customer</th><th>Orders</th><th>Total Spent</th><th>Last Purchase</th></tr></thead>
             <tbody>{topCustomers.map((c,i)=>(
               <tr key={i}>

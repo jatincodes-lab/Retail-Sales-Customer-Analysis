@@ -74,7 +74,7 @@ export default function Products() {
   return (
     <div className="content">
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
-        <div><h1 className="page-title">Products</h1><p className="page-sub">{products.length} products — vw_product_details</p></div>
+        <div><h1 className="page-title">Products</h1><p className="page-sub">{products.length} products</p></div>
         {user?.role!=='cashier' && <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Product</button>}
       </div>
 

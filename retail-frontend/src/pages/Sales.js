@@ -115,7 +115,7 @@ export default function Sales() {
       {/* Daily chart (simple table) — only when no date selected */}
       {!selectedDate && (
         <div className="card" style={{ marginBottom:16 }}>
-          <div className="section-title">📅 Daily Sales Summary — vw_daily_sales</div>
+          <div className="section-title">📅 Daily Sales Summary</div>
           <div className="table-wrap">
             <table>
               <thead><tr><th>Date</th><th>Sales</th><th>Revenue</th><th>Registered</th><th>Guests</th></tr></thead>

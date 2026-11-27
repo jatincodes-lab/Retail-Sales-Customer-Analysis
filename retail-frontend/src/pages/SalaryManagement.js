@@ -94,7 +94,7 @@ export default function SalaryManagement() {
 
       <div className="card" style={{ padding:0, overflow:'hidden' }}>
         <div style={{ padding:'14px 20px', borderBottom:'1px solid #e2e8f0', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <span style={{ fontWeight:700, fontSize:14 }}>Employee Salary — vw_salary_summary</span>
+          <span style={{ fontWeight:700, fontSize:14 }}>Employee Salary</span>
           <span style={{ fontSize:12, color:'#64748b' }}>
             {paidThisMonth}/{summary.length} paid for {currentMonth}
           </span>

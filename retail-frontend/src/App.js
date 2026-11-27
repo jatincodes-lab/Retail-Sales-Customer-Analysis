@@ -53,8 +53,8 @@ function Layout() {
 
   const titleEntry = PAGE_TITLES[location.pathname];
   const title = typeof titleEntry === 'object'
-    ? (titleEntry[user?.role] || 'RetailMS')
-    : (titleEntry || 'RetailMS');
+    ? (titleEntry[user?.role] || 'RetailIQ')
+    : (titleEntry || 'RetailIQ');
 
   const rs = ROLE_STYLE[user?.role] || {};
   const userInitial = user?.username?.trim()?.charAt(0)?.toUpperCase() || 'U';
@@ -64,7 +64,7 @@ function Layout() {
       <Sidebar />
       <div className="main">
         <div className="topbar">
-          <div className="topbar-crumbs"><span>RetailMS</span><span className="crumb-separator">/</span><strong>{title}</strong></div>
+          <div className="topbar-crumbs"><span>RetailIQ</span><span className="crumb-separator">/</span><strong>{title}</strong></div>
           <div className="topbar-meta">
             <span className="topbar-store" aria-label="Current store">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h18l-2-6H5l-2 6Zm2 0v10h14V10M9 20v-6h6v6M3 10a3 3 0 0 0 6 0 3 3 0 0 0 6 0 3 3 0 0 0 6 0" /></svg>
