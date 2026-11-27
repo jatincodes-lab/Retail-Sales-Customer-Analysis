@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import LoadingButton from '../components/LoadingButton';
+import { nextIdempotencyKey } from '../api/idempotency';
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 
@@ -14,6 +15,7 @@ export default function NewSale() {
   const [msg,             setMsg]             = useState({ text:'', type:'' });
   const [loading,         setLoading]         = useState(false);
   const [globalDiscount,  setGlobalDiscount]  = useState(5); // fetched from DB
+  const saleKey = useRef(null);
   const navigate = useNavigate();
 
   const flash = (text, type='success') => { setMsg({text,type}); setTimeout(()=>setMsg({text:'',type:''}),4000); };
@@ -52,8 +54,10 @@ export default function NewSale() {
   const removeFromCart = id => setCart(cart.filter(c => c.product_id !== id));
 
   const updateQty = (id, qty) => {
-    const n = parseInt(qty);
-    if (isNaN(n) || n <= 0) return removeFromCart(id);
+    if (!/^\d+$/.test(String(qty))) return;
+    const n = Number(qty);
+    if (!Number.isSafeInteger(n)) { flash('Quantity is too large', 'error'); return; }
+    if (n <= 0) return removeFromCart(id);
     const prod = products.find(p => p.product_id === id);
     if (n > prod.quantity_in_stock) { flash('Exceeds available stock!', 'error'); return; }
     setCart(cart.map(c => c.product_id === id ? { ...c, quantity: n } : c));
@@ -67,9 +71,11 @@ export default function NewSale() {
     return parseFloat((product.unit_price * (1 - total)).toFixed(2));
   };
 
-  const subtotal    = cart.reduce((sum, c) => sum + c.unit_price * c.quantity, 0);
-  const finalTotal  = cart.reduce((sum, c) => sum + effectivePrice(c) * c.quantity, 0);
-  const discountAmt = subtotal - finalTotal;
+  const subtotalCents = cart.reduce((sum, c) => sum + Math.round(Number(c.unit_price) * 100) * c.quantity, 0);
+  const finalTotalCents = cart.reduce((sum, c) => sum + Math.round(effectivePrice(c) * 100) * c.quantity, 0);
+  const subtotal = subtotalCents / 100;
+  const finalTotal = finalTotalCents / 100;
+  const discountAmt = Math.max(0, subtotalCents - finalTotalCents) / 100;
 
   const submitSale = async () => {
     if (loading) return;
@@ -79,11 +85,13 @@ export default function NewSale() {
       const res = await api.post('/sales', {
         customer_id: customerId || null,
         items: cart.map(c => ({ product_id: c.product_id, quantity: c.quantity }))
-      });
+      }, { headers: { 'Idempotency-Key': nextIdempotencyKey(saleKey) } });
+      saleKey.current = null;
       flash(`✅ Sale #${res.data.sale_id} created! Total: ${fmt(res.data.total)}`);
       setCart([]); setCustomerId('');
       setTimeout(() => navigate('/sales'), 1800);
     } catch (err) {
+      if (err.response) saleKey.current = null;
       flash(err.response?.data?.error || 'Error creating sale', 'error');
     } finally { setLoading(false); }
   };

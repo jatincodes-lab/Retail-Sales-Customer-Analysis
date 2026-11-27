@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import LoadingButton from '../components/LoadingButton';
 import useActionLoading from '../hooks/useActionLoading';
 import { useAuth } from '../context/AuthContext';
+import { nextIdempotencyKey } from '../api/idempotency';
 
 const fmt = n => n!=null ? `Rs. ${Number(n).toLocaleString()}` : '—';
 
@@ -20,6 +21,7 @@ export default function Products() {
   const [restockQty,      setRestockQty]      = useState('');
   const [restockSupplier, setRestockSupplier] = useState('');
   const [restockCost,     setRestockCost]     = useState('');
+  const restockKey = useRef(null);
   const [msg,  setMsg]  = useState({ text:'', type:'' });
   const [form, setForm] = useState({ category_id:'', supplier_id:'', product_name:'', description:'', unit_price:'', cost_price:'', reorder_level:10 });
   const [editForm, setEditForm] = useState({});
@@ -58,9 +60,10 @@ export default function Products() {
   const restock = async e => {
     e.preventDefault();
     try {
-      const res = await api.patch(`/products/${restockModal.product_id}/restock`, { quantity:Number(restockQty), supplier_id:restockSupplier||undefined, unit_cost:restockCost||undefined });
+      const res = await api.patch(`/products/${restockModal.product_id}/restock`, { quantity:Number(restockQty), supplier_id:restockSupplier||undefined, unit_cost:restockCost||undefined }, { headers: { 'Idempotency-Key': nextIdempotencyKey(restockKey) } });
+      restockKey.current = null;
       flash(res.data.message); setRestockModal(null); load();
-    } catch(err) { flash(err.response?.data?.error||'Error','error'); }
+    } catch(err) { if (err.response) restockKey.current = null; flash(err.response?.data?.error||'Error','error'); }
   };
 
   const deleteProduct = async id => {

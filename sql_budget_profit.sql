@@ -144,8 +144,6 @@ BEGIN
 END;
 $$;
 
-COMMIT;
-
 CREATE OR REPLACE FUNCTION sp_pay_salary(p_employee_id integer,p_amount numeric,p_month_year varchar,
                                           p_paid_by varchar,p_payment_method varchar,p_notes text) RETURNS void
 LANGUAGE plpgsql AS $$
@@ -155,3 +153,5 @@ BEGIN
    VALUES(p_employee_id,p_amount,p_month_year,p_paid_by,COALESCE(p_payment_method,'cash'),p_notes);
 END;
 $$;
+
+COMMIT;

@@ -16,6 +16,7 @@ test('PostgreSQL schema, routines, constraints, and concurrent stock updates', {
     await client.query(`SET search_path TO "${schema}"`);
     await client.query(fs.readFileSync(path.join(__dirname, '../../schema.sql'), 'utf8'));
     await client.query(fs.readFileSync(path.join(__dirname, '../../sql_budget_profit.sql'), 'utf8'));
+    await client.query(fs.readFileSync(path.join(__dirname, '../../sql_sale_snapshots.sql'), 'utf8'));
 
     await t.test('migrations create the expected base and feature data', async () => {
       const { rows } = await client.query(`

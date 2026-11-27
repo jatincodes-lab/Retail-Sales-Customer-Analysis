@@ -32,10 +32,9 @@ router.get('/', auth, async (req, res) => {
     const [{ rows: salesTrend }, { rows: recentActivity }] = await Promise.all([
       pool.query(`
         SELECT s.sale_id,s.sale_date,COALESCE(SUM(si.quantity*si.unit_price),0) AS revenue,
-               COALESCE(SUM(si.quantity*(si.unit_price-p.cost_price)),0) AS gross_profit
+               COALESCE(SUM(si.quantity*(si.unit_price-si.unit_cost_at_sale)),0) AS gross_profit
         FROM Sale s
         LEFT JOIN Sale_Item si ON si.sale_id=s.sale_id
-        LEFT JOIN Product p ON p.product_id=si.product_id
         GROUP BY s.sale_id,s.sale_date ORDER BY s.sale_date DESC,s.sale_id DESC LIMIT 12`),
       pool.query(`
         SELECT * FROM (

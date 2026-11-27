@@ -184,6 +184,11 @@ export default function AdminDashboard() {
 
       {message && <div className="dashboard-notice" role="status">{message}</div>}
       {budgetError && <div className="dashboard-notice dashboard-notice-muted" role="status">{budgetError}</div>}
+      {Number(profit?.estimated_cost_lines) > 0 && (
+        <div className="dashboard-notice dashboard-notice-muted" role="status">
+          Gross profit includes estimated costs for {number(profit.estimated_cost_lines)} sale items recorded before cost snapshots were added.
+        </div>
+      )}
 
       <section className="metric-grid" aria-label="Store performance totals">
         {metrics.map(metric => (

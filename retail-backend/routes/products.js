@@ -2,10 +2,12 @@ const express = require('express');
 const pool = require('../config/db');
 const auth = require('../middleware/auth');
 const sendError = require('../utils/errors');
+const { claimIdempotency, saveIdempotentResponse } = require('../utils/idempotency');
 const router = express.Router();
 
 const positiveInteger = value => Number.isSafeInteger(Number(value)) && Number(value) > 0;
-const nonNegativeNumber = value => value !== '' && Number.isFinite(Number(value)) && Number(value) >= 0;
+const nonNegativeNumber = value => value != null && !(typeof value === 'string' && !value.trim()) &&
+  Number.isFinite(Number(value)) && Number(value) >= 0;
 const productDetailsQuery = `
   SELECT p.*, c.category_name, s.supplier_name, i.quantity_in_stock
   FROM product p
@@ -13,25 +15,26 @@ const productDetailsQuery = `
   JOIN supplier s ON s.supplier_id=p.supplier_id
   JOIN inventory i ON i.product_id=p.product_id`;
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const { rows } = await pool.query(`${productDetailsQuery} ORDER BY p.product_name`);
-    res.json(rows);
+    res.json(req.user.role === 'cashier' ? rows.map(({ cost_price, ...product }) => product) : rows);
   } catch (err) { sendError(res, err); }
 });
 
-router.get('/low-stock', async (req, res) => {
+router.get('/low-stock', auth, async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT * FROM vw_low_stock ORDER BY quantity_in_stock ASC');
-    res.json(rows);
+    res.json(req.user.role === 'cashier' ? rows.map(({ cost_price, ...product }) => product) : rows);
   } catch (err) { sendError(res, err); }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   if (!positiveInteger(req.params.id)) return res.status(400).json({ error: 'Invalid product id' });
   try {
     const { rows } = await pool.query(`${productDetailsQuery} WHERE p.product_id=$1`, [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Product not found' });
+    if (req.user.role === 'cashier') delete rows[0].cost_price;
     res.json(rows[0]);
   } catch (err) { sendError(res, err); }
 });
@@ -39,7 +42,7 @@ router.get('/:id', async (req, res) => {
 router.post('/', auth, async (req, res) => {
   if (req.user.role === 'cashier') return res.status(403).json({ error: 'Not authorized' });
   const { category_id, supplier_id, product_name, description, unit_price, cost_price = 0, reorder_level = 10 } = req.body;
-  if (!positiveInteger(category_id) || !positiveInteger(supplier_id) || !String(product_name || '').trim() ||
+  if (!positiveInteger(category_id) || !positiveInteger(supplier_id) || !String(product_name || '').trim() || String(product_name).trim().length > 150 ||
       !nonNegativeNumber(unit_price) || Number(unit_price) === 0 || !nonNegativeNumber(cost_price) ||
       !Number.isSafeInteger(Number(reorder_level)) || Number(reorder_level) < 0) {
     return res.status(400).json({ error: 'Invalid product data' });
@@ -68,7 +71,8 @@ router.patch('/:id', auth, async (req, res) => {
   if (req.user.role === 'cashier') return res.status(403).json({ error: 'Not authorized' });
   if (!positiveInteger(req.params.id)) return res.status(400).json({ error: 'Invalid product id' });
   const { product_name, unit_price, cost_price, description, reorder_level, category_id, supplier_id, discount_all, discount_registered } = req.body;
-  if (product_name != null && !String(product_name).trim()) return res.status(400).json({ error: 'Product name cannot be empty' });
+  if (product_name != null && (!String(product_name).trim() || String(product_name).trim().length > 150))
+    return res.status(400).json({ error: 'Product name must be 1 to 150 characters' });
   if (unit_price != null && (!nonNegativeNumber(unit_price) || Number(unit_price) === 0)) return res.status(400).json({ error: 'Invalid unit price' });
   if (cost_price != null && !nonNegativeNumber(cost_price)) return res.status(400).json({ error: 'Invalid cost price' });
   if (reorder_level != null && (!Number.isSafeInteger(Number(reorder_level)) || Number(reorder_level) < 0)) return res.status(400).json({ error: 'Invalid reorder level' });
@@ -105,11 +109,22 @@ router.patch('/:id/restock', auth, async (req, res) => {
   try {
     client = await pool.connect();
     await client.query('BEGIN');
+    const routeKey = `products.restock:${req.params.id}`;
+    const idempotency = await claimIdempotency(client, req.user.id, routeKey, req.get('Idempotency-Key'), req.body);
+    if (idempotency?.replay) {
+      await client.query('COMMIT');
+      return res.status(idempotency.status).json(idempotency.body);
+    }
     const { rows: products } = await client.query('SELECT * FROM product WHERE product_id=$1 FOR UPDATE', [req.params.id]);
     if (!products.length) {
       const error = new Error('Product not found'); error.status = 404; throw error;
     }
     const product = products[0];
+    const { rows: inventory } = await client.query(
+      'SELECT quantity_in_stock FROM inventory WHERE product_id=$1 FOR UPDATE', [req.params.id]);
+    if (!inventory.length) {
+      const error = new Error('Product inventory not found'); error.status = 404; throw error;
+    }
     const supplierId = supplier_id ?? product.supplier_id;
     const cost = unit_cost ?? product.cost_price;
     const { rows: purchases } = await client.query(
@@ -117,15 +132,21 @@ router.patch('/:id/restock', auth, async (req, res) => {
        VALUES ($1,$2,$3,$4,($3::integer::numeric * $4::numeric),$5,$6) RETURNING purchase_id,total_cost`,
       [supplierId, req.params.id, quantity, cost, req.user.username, notes || null]
     );
-    await client.query('UPDATE product SET supplier_id=$1 WHERE product_id=$2', [supplierId, req.params.id]);
+    await client.query(`
+      UPDATE product SET supplier_id=$1,
+        cost_price=ROUND((cost_price*$2::numeric + $3::numeric*$4::numeric)/($2::numeric+$4::numeric),2)
+      WHERE product_id=$5`,
+    [supplierId, inventory[0].quantity_in_stock, cost, quantity, req.params.id]);
     await client.query(
       `INSERT INTO store_budget (amount,type,description,reference_id,created_by)
        VALUES (-$1::numeric,'purchase',$2,$3,$4)`,
       [purchases[0].total_cost, `Restock: ${product.product_name} x${quantity} from supplier`, purchases[0].purchase_id, req.user.username]
     );
     await client.query('SELECT sp_restock_product($1,$2)', [req.params.id, quantity]);
+    const response = { message: `Restocked ${quantity} units. Budget deducted: Rs. ${purchases[0].total_cost}` };
+    await saveIdempotentResponse(client, req.user.id, routeKey, idempotency, 200, response);
     await client.query('COMMIT');
-    res.json({ message: `Restocked ${quantity} units. Budget deducted: Rs. ${purchases[0].total_cost}` });
+    res.json(response);
   } catch (err) {
     try { await client.query('ROLLBACK'); } catch (rollbackError) { console.error(rollbackError); }
     sendError(res, err);

@@ -5,6 +5,7 @@ const sendError = require('../utils/errors');
 const router  = express.Router();
 
 router.get('/', auth, async (req, res) => {
+  if (req.user.role === 'cashier') return res.status(403).json({ error: 'Not authorized' });
   try {
     const { rows: rows } = await pool.query('SELECT * FROM Supplier ORDER BY supplier_name');
     const { rows: catRows } = await pool.query(`
@@ -22,6 +23,7 @@ router.get('/', auth, async (req, res) => {
 
 // GET purchases history for a supplier
 router.get('/:id/purchases', auth, async (req, res) => {
+  if (req.user.role === 'cashier') return res.status(403).json({ error: 'Not authorized' });
   try {
     const { rows: rows } = await pool.query(
       'SELECT * FROM vw_supplier_purchases WHERE supplier_id=$1 ORDER BY purchase_date DESC',
@@ -34,19 +36,20 @@ router.get('/:id/purchases', auth, async (req, res) => {
 // POST /api/suppliers — now accepts initial_category_id to link a product category
 router.post('/', auth, async (req, res) => {
   if (req.user.role === 'cashier') return res.status(403).json({ error: 'Not authorized' });
-  const { supplier_name, contact_person, phone, email, address, initial_category_id } = req.body;
-  if (!String(supplier_name || '').trim()) return res.status(400).json({ error: 'supplier_name required' });
+  const { supplier_name, contact_person, phone, email, address } = req.body;
+  const name = typeof supplier_name === 'string' ? supplier_name.trim() : '';
+  const cleanPhone = typeof phone === 'string' ? phone.trim() : '';
+  const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  if (!name || name.length > 150 || (cleanPhone && !/^\d{1,10}$/.test(cleanPhone)) ||
+      (cleanEmail && (cleanEmail.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))) ||
+      (contact_person && String(contact_person).trim().length > 100))
+    return res.status(400).json({ error: 'Enter valid supplier details; phone must be up to 10 digits' });
   try {
     const { rows: result } = await pool.query(
       'INSERT INTO Supplier (supplier_name, contact_person, phone, email, address) VALUES ($1,$2,$3,$4,$5) RETURNING supplier_id',
-      [String(supplier_name).trim(), contact_person||null, phone||null, email||null, address||null]
+      [name, contact_person ? String(contact_person).trim() : null, cleanPhone||null, cleanEmail||null, address||null]
     );
     const supplier_id = result[0].supplier_id;
-
-    // If a category was selected, create a placeholder product link
-    // Actually: just store a note — real category shows when products are assigned
-    // Better approach: add a note column or just return success
-    // The category will naturally appear once products from this supplier are added
 
     res.status(201).json({ message: 'Supplier added', supplier_id });
   } catch (err) { sendError(res, err); }

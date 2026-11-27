@@ -79,6 +79,7 @@ A full-stack web application for managing retail store operations including inve
 retail-system/
 ├── schema.sql                      ← PostgreSQL base schema and sample data
 ├── sql_budget_profit.sql           ← PostgreSQL HR + budget + profit schema
+├── sql_sale_snapshots.sql          ← Preserve item cost/name when each sale is made
 ├── README.md
 ├── retail-backend/
 │   ├── server.js                   ← Express entry point (port 5001)
@@ -124,21 +125,24 @@ retail-system/
 - Node.js 20+ and PostgreSQL 16+
 
 ### Step 1 — Database
-Create the database, then run both scripts in order from the repository root:
-These scripts are one-time setup for a fresh database and include sample data.
+Create the database, then run all three scripts in order from the repository root:
+The first two scripts create a fresh database and sample data. The third adds sale-time snapshots and can also upgrade an existing database.
 
 ```bash
 psql -d postgres -c "CREATE ROLE retail_app LOGIN PASSWORD 'choose-a-database-password';"
 createdb -O retail_app retail_db
 psql -U retail_app -v ON_ERROR_STOP=1 -d retail_db -f schema.sql
 psql -U retail_app -v ON_ERROR_STOP=1 -d retail_db -f sql_budget_profit.sql
+psql -U retail_app -v ON_ERROR_STOP=1 -d retail_db -f sql_sale_snapshots.sql
 ```
+
+For an existing database, apply `sql_sale_snapshots.sql` once after the other schema scripts and before deploying the current backend. It backfills earlier sale lines from the product's current cost and marks those values as estimates; correct them manually if the original costs are known. It also creates the persistent login throttle and idempotency tables used by the backend.
 
 ### Step 2 — Backend
 ```bash
 cd retail-backend
 Copy-Item .env.example .env
-# Set DATABASE_URL and a random JWT_SECRET (at least 32 characters) in .env
+# Set DATABASE_URL, a random JWT_SECRET (at least 32 characters), and STORE_TIMEZONE (IANA name) in .env
 npm.cmd ci
 npm.cmd start
 ```
@@ -154,6 +158,8 @@ npm.cmd run create-user
 
 The same script creates `manager` and `cashier` accounts. The `/api/health` endpoint checks database connectivity.
 
+Sign-in limits each username to 10 attempts per 15-minute window. Sales, restocks, and salary payments require an `Idempotency-Key` header; the app supplies a key and reuses it after a network timeout. Keys expire after 90 days. Set `STORE_TIMEZONE` to the store's IANA time zone (for example, `Asia/Kolkata`) so database timestamps and date reports use the store's local day.
+
 ### Step 3 — Frontend
 ```bash
 cd retail-frontend
@@ -163,7 +169,7 @@ npm.cmd start
 ```
 
 ### PostgreSQL tests
-Set `TEST_DATABASE_URL` to a disposable PostgreSQL database where the user can create/drop schemas, then run `npm.cmd test` from `retail-backend`. Tests create an isolated schema, apply both SQL files, check routines and constraints, and drop that schema afterward.
+Set `TEST_DATABASE_URL` to a disposable PostgreSQL database where the user can create/drop schemas, then run `npm.cmd test` from `retail-backend`. Tests create an isolated schema, apply all three SQL files, check routines and constraints, and drop that schema afterward.
 
 ---
 
@@ -184,3 +190,7 @@ Set `TEST_DATABASE_URL` to a disposable PostgreSQL database where the user can c
 | GET | `/api/dashboard` | Yes | Live stats + all views |
 
 ---
+
+## 🔗 Repository
+
+[github.com/SMPanther/retail-system](https://github.com/SMPanther/retail-system)

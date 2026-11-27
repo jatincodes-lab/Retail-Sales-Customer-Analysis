@@ -2,10 +2,12 @@ const express = require('express');
 const pool    = require('../config/db');
 const auth    = require('../middleware/auth');
 const sendError = require('../utils/errors');
+const { claimIdempotency, saveIdempotentResponse } = require('../utils/idempotency');
 const router  = express.Router();
 
 // GET /api/employees
 router.get('/', auth, async (req, res) => {
+  if (!['admin','manager'].includes(req.user.role)) return res.status(403).json({ error: 'Not authorized' });
   try {
     const { rows: rows } = await pool.query(`
       SELECT e.*,
@@ -21,30 +23,36 @@ router.get('/', auth, async (req, res) => {
     `);
 
     // Check which employees were paid this month
+    if (req.user.role !== 'admin')
+      return res.json(rows.map(({ base_salary, ...employee }) => employee));
     const currentMonth = new Date().toLocaleString('en-US', { month:'long', year:'numeric' });
-    const { rows: paidThisMonth } = await pool.query(`
-      SELECT DISTINCT employee_id FROM Salary_Payment
-      WHERE month_year = $1`, [currentMonth]);
+    const { rows: paidThisMonth } = await pool.query(
+      'SELECT DISTINCT employee_id FROM Salary_Payment WHERE month_year = $1', [currentMonth]);
     const paidSet = new Set(paidThisMonth.map(r => r.employee_id));
-
     res.json(rows.map(e => ({ ...e, paid_this_month: paidSet.has(e.employee_id) })));
   } catch (err) { sendError(res, err); }
 });
 
 // GET /api/employees/:id
 router.get('/:id', auth, async (req, res) => {
+  if (!['admin','manager'].includes(req.user.role)) return res.status(403).json({ error: 'Not authorized' });
+  if (!Number.isSafeInteger(Number(req.params.id)) || Number(req.params.id) <= 0)
+    return res.status(400).json({ error: 'Invalid employee id' });
   try {
     const { rows: rows } = await pool.query('SELECT * FROM Employee WHERE employee_id = $1', [req.params.id]);
     if (!rows.length) return res.status(404).json({ error: 'Employee not found' });
-    const { rows: payments } = await pool.query(
-      'SELECT * FROM Salary_Payment WHERE employee_id = $1 ORDER BY payment_date DESC', [req.params.id]);
+    const payments = req.user.role === 'admin'
+      ? (await pool.query('SELECT * FROM Salary_Payment WHERE employee_id = $1 ORDER BY payment_date DESC', [req.params.id])).rows
+      : [];
     const { rows: duties } = await pool.query(`
       SELECT da.*, d.duty_name, d.department, CONCAT(m.first_name,' ',m.last_name) AS assigned_by_name
       FROM Duty_Assignment da
       JOIN Duty d ON da.duty_id = d.duty_id
       JOIN Employee m ON da.assigned_by = m.employee_id
       WHERE da.employee_id = $1 ORDER BY da.assigned_date DESC`, [req.params.id]);
-    res.json({ ...rows[0], payments, duties });
+    const employee = { ...rows[0], payments, duties };
+    if (req.user.role !== 'admin') delete employee.base_salary;
+    res.json(employee);
   } catch (err) { sendError(res, err); }
 });
 
@@ -52,12 +60,22 @@ router.get('/:id', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const { first_name, last_name, email, phone, role, base_salary, join_date, address } = req.body;
-  if (!first_name || !last_name || !['manager','cashier','stock_handler','rack_manager'].includes(role))
-    return res.status(400).json({ error: 'first_name, last_name and role required' });
+  const firstName = typeof first_name === 'string' ? first_name.trim() : '';
+  const lastName = typeof last_name === 'string' ? last_name.trim() : '';
+  const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const cleanPhone = typeof phone === 'string' ? phone.trim() : '';
+  const salary = Number(base_salary ?? 0);
+  if (!firstName || !lastName || firstName.length > 80 || lastName.length > 80 ||
+      !['manager','cashier','stock_handler','rack_manager'].includes(role) ||
+      (cleanEmail && (cleanEmail.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))) ||
+      (cleanPhone && !/^\d{1,10}$/.test(cleanPhone)) ||
+      !Number.isFinite(salary) || salary < 0 || salary > 99999999.99 ||
+      !/^\d+(?:\.\d{1,2})?$/.test(String(base_salary ?? 0)))
+    return res.status(400).json({ error: 'Enter valid employee details, phone (up to 10 digits), and salary' });
   try {
     const { rows: result } = await pool.query(
       'INSERT INTO Employee (first_name,last_name,email,phone,role,base_salary,join_date,address) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING employee_id',
-      [first_name, last_name, email||null, phone||null, role, base_salary ?? 0, join_date||null, address||null]
+      [firstName, lastName, cleanEmail||null, cleanPhone||null, role, salary, join_date||null, address||null]
     );
     res.status(201).json({ message: 'Employee added', employee_id: result[0].employee_id });
   } catch (err) {
@@ -130,15 +148,24 @@ router.get('/salary/summary', auth, async (req, res) => {
 router.post('/:id/pay', auth, async (req, res) => {
   if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const { amount, month_year, payment_method, notes } = req.body;
+  const paymentAmount = Number(amount);
+  const validMonth = typeof month_year === 'string' && /^(January|February|March|April|May|June|July|August|September|October|November|December) \d{4}$/.test(month_year.trim());
   if (!Number.isSafeInteger(Number(req.params.id)) || Number(req.params.id) <= 0 ||
-      amount == null || !Number.isFinite(Number(amount)) || Number(amount) === 0 ||
-      typeof month_year !== 'string' || !month_year.trim() || month_year.length > 20)
+      amount == null || !Number.isFinite(paymentAmount) || paymentAmount === 0 || Math.abs(paymentAmount) > 99999999.99 ||
+      !/^[-]?\d+(?:\.\d{1,2})?$/.test(String(amount)) || !validMonth ||
+      !['cash','bank_transfer','cheque'].includes(payment_method || 'cash'))
     return res.status(400).json({ error: 'Invalid employee id, amount, or month_year' });
 
   let client;
   try {
     client = await pool.connect();
     await client.query('BEGIN');
+    const routeKey = `employees.salary:${req.params.id}`;
+    const idempotency = await claimIdempotency(client, req.user.id, routeKey, req.get('Idempotency-Key'), req.body);
+    if (idempotency?.replay) {
+      await client.query('COMMIT');
+      return res.status(idempotency.status).json(idempotency.body);
+    }
     const { rows: employees } = await client.query('SELECT employee_id FROM employee WHERE employee_id=$1 FOR UPDATE', [req.params.id]);
     if (!employees.length) {
       const error = new Error('Employee not found'); error.status = 404; throw error;
@@ -153,8 +180,10 @@ router.post('/:id/pay', auth, async (req, res) => {
     }
     await client.query('SELECT sp_pay_salary($1,$2,$3,$4,$5,$6)',
       [req.params.id, amount, month_year.trim(), req.user.username, payment_method||'cash', notes||null]);
+    const response = { message: 'Salary paid' };
+    await saveIdempotentResponse(client, req.user.id, routeKey, idempotency, 200, response);
     await client.query('COMMIT');
-    res.json({ message: 'Salary paid' });
+    res.json(response);
   } catch (err) {
     if (client) try { await client.query('ROLLBACK'); } catch (rollbackError) { console.error(rollbackError); }
     if (err.code === '23505') return res.status(409).json({ error: `Already paid for ${month_year}` });

@@ -9,7 +9,10 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     localStorage.removeItem('retail_token');
     localStorage.removeItem('retail_user');
-    api.get('/auth/me').then(res => setUser(res.data.user)).catch(() => setUser(null)).finally(() => setIsReady(true));
+    api.get('/auth/me')
+      .then(res => setUser(res.data.user))
+      .catch(() => setUser(null))
+      .finally(() => setIsReady(true));
   }, []);
 
   const login = userData => {

@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import LoadingButton from '../components/LoadingButton';
 import useActionLoading from '../hooks/useActionLoading';
+import { nextIdempotencyKey } from '../api/idempotency';
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -22,6 +23,8 @@ export default function SalaryManagement() {
   const [msg,  setMsg]  = useState({ text:'', type:'' });
   const [payForm,   setPayForm]   = useState({ amount:'', month_year:'', payment_method:'cash', notes:'' });
   const [deductForm, setDeductForm] = useState({ amount:'', reason:'' });
+  const payKey = useRef(null);
+  const deductionKey = useRef(null);
 
   const flash = (text, type='success') => { setMsg({text,type}); setTimeout(()=>setMsg({text:'',type:''}),4000); };
   const year  = new Date().getFullYear();
@@ -40,11 +43,12 @@ export default function SalaryManagement() {
   const paySalary = async e => {
     e.preventDefault();
     try {
-      await api.post(`/employees/${payModal.employee_id}/pay`, payForm);
+      await api.post(`/employees/${payModal.employee_id}/pay`, payForm, { headers: { 'Idempotency-Key': nextIdempotencyKey(payKey) } });
+      payKey.current = null;
       flash(`✅ Salary paid to ${payModal.employee_name}`);
       setPayModal(null); setPayForm({ amount:'', month_year:'', payment_method:'cash', notes:'' });
       load();
-    } catch(err) { flash(err.response?.data?.error || 'Error', 'error'); }
+    } catch(err) { if (err.response) payKey.current = null; flash(err.response?.data?.error || 'Error', 'error'); }
   };
 
   const deductSalary = async e => {
@@ -57,11 +61,12 @@ export default function SalaryManagement() {
         month_year: currentMonth,
         payment_method: 'cash',
         notes: `DEDUCTION: ${deductForm.reason || 'Manual deduction'}`,
-      });
+      }, { headers: { 'Idempotency-Key': nextIdempotencyKey(deductionKey) } });
+      deductionKey.current = null;
       flash(`Deduction applied to ${deductModal.employee_name}`);
       setDeductModal(null); setDeductForm({ amount:'', reason:'' });
       load();
-    } catch(err) { flash(err.response?.data?.error || 'Error', 'error'); }
+    } catch(err) { if (err.response) deductionKey.current = null; flash(err.response?.data?.error || 'Error', 'error'); }
   };
 
   if (loading) return <div className="loading">Loading salary data...</div>;

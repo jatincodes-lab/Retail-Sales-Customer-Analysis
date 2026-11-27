@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import api from '../api/axios';
 import LoadingButton from '../components/LoadingButton';
+import { nextIdempotencyKey } from '../api/idempotency';
 import useActionLoading from '../hooks/useActionLoading';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,6 +26,7 @@ const MONTHS = [
 ];
 
 export default function Employees() {
+  const payKey = useRef(null);
   const { run, isLoading } = useActionLoading();
   const [employees,  setEmployees]  = useState([]);
   const [duties,     setDuties]     = useState([]);
@@ -120,12 +122,13 @@ export default function Employees() {
   const paySalary = async e => {
     e.preventDefault();
     try {
-      await api.post(`/employees/${payModal.employee_id}/pay`, payForm);
+      await api.post(`/employees/${payModal.employee_id}/pay`, payForm, { headers: { 'Idempotency-Key': nextIdempotencyKey(payKey) } });
+      payKey.current = null;
       flash(`Salary paid to ${payModal.first_name}!`);
       setPayModal(null);
       setPayForm({ amount:'', month_year:'', payment_method:'cash', notes:'' });
       await load();
-    } catch(err) { flash(err.response?.data?.error || 'Error', 'error'); }
+    } catch(err) { if (err.response) payKey.current = null; flash(err.response?.data?.error || 'Error', 'error'); }
   };
 
   const toggleStatus = async (emp) => {

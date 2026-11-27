@@ -38,13 +38,13 @@ router.get('/profit', auth, async (req, res) => {
     const { rows: [profit] } = await pool.query('SELECT * FROM vw_profit_summary');
     const { rows: [budget] } = await pool.query('SELECT * FROM vw_budget_balance');
     const { rows: topProfit } = await pool.query(`
-      SELECT p.product_name, p.unit_price, p.cost_price,
+      SELECT si.product_name_at_sale AS product_name,
              SUM(si.quantity) AS units_sold,
              SUM(si.quantity * si.unit_price) AS revenue,
-             SUM(si.quantity * p.cost_price)  AS cost,
-             SUM(si.quantity * (si.unit_price - p.cost_price)) AS profit
-      FROM Sale_Item si JOIN Product p ON si.product_id = p.product_id
-      GROUP BY p.product_id ORDER BY profit DESC LIMIT 10
+             SUM(si.quantity * si.unit_cost_at_sale) AS cost,
+             SUM(si.quantity * (si.unit_price - si.unit_cost_at_sale)) AS profit
+      FROM Sale_Item si
+      GROUP BY si.product_id,si.product_name_at_sale ORDER BY profit DESC LIMIT 10
     `);
     res.json({ profit, budget, topProfit });
   } catch (err) { sendError(res, err); }

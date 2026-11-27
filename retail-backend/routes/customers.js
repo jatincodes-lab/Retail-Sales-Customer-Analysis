@@ -4,17 +4,19 @@ const auth    = require('../middleware/auth');
 const sendError = require('../utils/errors');
 const router  = express.Router();
 
-router.get('/', async (req, res) => {
+router.get('/', auth, async (req, res) => {
   try {
     const { rows: all } = await pool.query('SELECT * FROM Customer ORDER BY registration_date DESC');
     const { rows: spend } = await pool.query('SELECT * FROM vw_customer_spend ORDER BY total_spent DESC');
     const map = {};
     spend.forEach(s => { map[s.customer_id] = s; });
-    res.json(all.map(c => ({ ...c, ...(map[c.customer_id] || { total_orders:0, total_spent:0 }) })));
+    const customers = all.map(c => ({ ...c, ...(map[c.customer_id] || { total_orders:0, total_spent:0 }) }));
+    res.json(req.user.role === 'cashier' ? customers.map(({ email, phone, address, ...customer }) => customer) : customers);
   } catch (err) { sendError(res, err); }
 });
 
-router.get('/top', async (req, res) => {
+router.get('/top', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
     const { rows: rows } = await pool.query(`
       SELECT customer_name, total_spent, total_orders, last_purchase FROM vw_customer_spend
@@ -25,7 +27,8 @@ router.get('/top', async (req, res) => {
 });
 
 // GET /api/customers/:id/history — all sales with items for a customer
-router.get('/:id/history', async (req, res) => {
+router.get('/:id/history', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   try {
     const { rows: sales } = await pool.query(`
       SELECT s.sale_id, s.sale_date, s.total_amount,
@@ -37,7 +40,7 @@ router.get('/:id/history', async (req, res) => {
     // Get items for each sale
     const result = await Promise.all(sales.map(async sale => {
       const { rows: items } = await pool.query(`
-        SELECT si.quantity, si.unit_price, p.product_name, c.category_name
+        SELECT si.quantity, si.unit_price, si.product_name_at_sale AS product_name, c.category_name
         FROM Sale_Item si
         JOIN Product p  ON si.product_id  = p.product_id
         JOIN Category c ON p.category_id  = c.category_id
@@ -49,12 +52,20 @@ router.get('/:id/history', async (req, res) => {
 });
 
 router.post('/', auth, async (req, res) => {
+  if (req.user.role !== 'admin') return res.status(403).json({ error: 'Admin only' });
   const { first_name, last_name, email, phone, address } = req.body;
-  if (!first_name || !last_name) return res.status(400).json({ error: 'Name required' });
+  const firstName = typeof first_name === 'string' ? first_name.trim() : '';
+  const lastName = typeof last_name === 'string' ? last_name.trim() : '';
+  const cleanEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+  const cleanPhone = typeof phone === 'string' ? phone.trim() : '';
+  if (!firstName || !lastName || firstName.length > 80 || lastName.length > 80 ||
+      (cleanEmail && (cleanEmail.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail))) ||
+      (cleanPhone && !/^\d{1,10}$/.test(cleanPhone)))
+    return res.status(400).json({ error: 'Enter valid names, email, and a phone number of up to 10 digits' });
   try {
     const { rows: result } = await pool.query(
       'INSERT INTO Customer (first_name,last_name,email,phone,address) VALUES ($1,$2,$3,$4,$5) RETURNING customer_id',
-      [first_name, last_name, email||null, phone||null, address||null]
+      [firstName, lastName, cleanEmail||null, cleanPhone||null, address||null]
     );
     res.status(201).json({ message: 'Customer added', customer_id: result[0].customer_id });
   } catch (err) {
@@ -64,7 +75,7 @@ router.post('/', auth, async (req, res) => {
 });
 
 // GET /api/customers/settings/discount — get global discount
-router.get('/settings/discount', async (req, res) => {
+router.get('/settings/discount', auth, async (req, res) => {
   try {
     const { rows: rows } = await pool.query(
       "SELECT setting_value FROM Store_Settings WHERE setting_key='registered_customer_discount'"
