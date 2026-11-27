@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar          from './components/Sidebar';
-import Login            from './pages/Login';
 import AdminDashboard   from './pages/AdminDashboard';
 import ManagerDashboard from './pages/ManagerDashboard';
 import Products         from './pages/Products';
@@ -37,6 +36,11 @@ function RequireRole({ allowed, children }) {
     return <Navigate to="/" replace />;
   }
   return children;
+}
+
+function LoginRedirect() {
+  React.useEffect(() => { window.location.replace('/retailq-login.html'); }, []);
+  return <div role="status" style={{ padding: 24 }}>Opening sign in…</div>;
 }
 
 const ROLE_STYLE = {
@@ -116,7 +120,7 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={<LoginRedirect />} />
           <Route path="/*"     element={<Layout />} />
         </Routes>
       </BrowserRouter>

@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#fbf8f1">
+  <title>Sign in · RetailQ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light;
+      --forest: #0b3d2e;
+      --forest-light: #0f5a43;
+      --mint: #bfe8d2;
+      --sun: #f2c14e;
+      --cream: #fbf8f1;
+      --paper: #fffdf7;
+      --ink: #13241d;
+      --muted: #5d6b64;
+      --border: #d8d6cb;
+      --error: #b3261e;
+      --heading: 'Bricolage Grotesque', sans-serif;
+      --body: 'Figtree', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body { margin: 0; min-width: 320px; min-height: 100vh; background: var(--cream); color: var(--ink); font-family: var(--body); font-size: 16px; }
+    button, input { font: inherit; }
+    button, a, input { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    .page { display: grid; grid-template-columns: 1.05fr 1fr; min-height: 100vh; min-height: 100svh; }
+
+    .brand-panel { position: relative; display: flex; flex-direction: column; justify-content: space-between; gap: 28px; min-width: 0; min-height: 100vh; min-height: 100svh; overflow: hidden; padding: 40px 56px; background: radial-gradient(ellipse at top left, var(--forest-light) 0%, var(--forest) 52%, #082a20 100%); color: white; }
+    .brand-top, .brand-middle, .module-pills { position: relative; z-index: 1; }
+    .brand-logo { display: inline-flex; align-items: center; gap: 12px; color: white; font-family: var(--heading); font-size: 26px; font-weight: 800; letter-spacing: -.03em; text-decoration: none; }
+    .store-icon { width: 42px; height: 42px; flex: none; color: var(--sun); }
+    .brand-middle { display: flex; flex-direction: column; align-items: flex-start; width: 100%; margin-block: auto; padding: 40px 0; }
+    .brand-middle h1 { max-width: 600px; margin: 0; color: #fff; font-family: var(--heading); font-size: clamp(40px, 5.1vw, 68px); font-weight: 800; line-height: .98; letter-spacing: -.035em; }
+    .lead { max-width: 34ch; margin: 17px 0 0; color: var(--mint); font-size: 18px; line-height: 1.5; }
+
+    .receipt { position: relative; z-index: 1; width: min(340px, 100%); margin: 32px 0 0 12px; transform: rotate(-2.2deg); filter: drop-shadow(0 18px 20px rgba(0, 0, 0, .27)); animation: receipt-drop .72s cubic-bezier(.2,.8,.2,1) both; }
+    .receipt-paper { position: relative; padding: 19px 20px 29px; background: var(--paper); clip-path: polygon(0 0,100% 0,100% 94%,97% 97%,94% 94%,91% 97%,88% 94%,85% 97%,82% 94%,79% 97%,76% 94%,73% 97%,70% 94%,67% 97%,64% 94%,61% 97%,58% 94%,55% 97%,52% 94%,49% 97%,46% 94%,43% 97%,40% 94%,37% 97%,34% 94%,31% 97%,28% 94%,25% 97%,22% 94%,19% 97%,16% 94%,13% 97%,10% 94%,7% 97%,4% 94%,0 97%); }
+    .receipt-sticker { position: absolute; z-index: 2; top: -15px; right: -29px; padding: 8px 12px; transform: rotate(6deg); border-radius: 999px; background: var(--sun); color: #392c0e; font-size: 12px; font-weight: 600; white-space: nowrap; box-shadow: 0 4px 10px rgba(0, 0, 0, .15); }
+    .receipt-meta, .receipt-item, .receipt-total { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .receipt-meta { padding-bottom: 12px; color: var(--muted); font-size: 11px; }
+    .receipt-meta span:last-child { font-weight: 600; }
+    .receipt-item { min-height: 34px; border-top: 1px dashed #d9d6cc; color: #435149; font-size: 12px; }
+    .receipt-item span:first-child { min-width: 0; }
+    .receipt-item span:last-child { flex: none; color: var(--ink); font-weight: 600; }
+    .receipt-total { margin-top: 9px; padding-top: 11px; border-top: 1px solid var(--border); color: var(--muted); font-size: 13px; }
+    .receipt-total strong { color: var(--forest); font-family: var(--heading); font-size: 22px; font-weight: 800; letter-spacing: -.03em; }
+    .sparkline { display: block; width: 100%; height: 35px; margin-top: 8px; overflow: visible; }
+    .sparkline path { fill: none; stroke: var(--forest-light); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 340; stroke-dashoffset: 340; animation: sparkline-draw 1.3s .35s ease-out forwards; }
+
+    .module-pills { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+    .module-pills li { padding: 8px 14px; border: 1px solid rgba(191, 232, 210, .35); border-radius: 999px; color: var(--mint); font-size: 14px; }
+
+    .form-panel { position: relative; display: flex; align-items: center; justify-content: center; min-width: 0; min-height: 100vh; min-height: 100svh; padding: 64px 40px 84px; background: var(--cream); }
+    .form-content { width: min(100%, 420px); }
+    .form-content h2 { margin: 0; font-family: var(--heading); font-size: 36px; font-weight: 800; line-height: 1.05; letter-spacing: -.03em; }
+    .form-subtitle { margin: 10px 0 32px; color: var(--muted); line-height: 1.5; }
+    .login-form { display: grid; gap: 20px; }
+    .field { position: relative; }
+    .field input { display: block; width: 100%; height: 58px; padding: 18px 48px 8px 16px; border: 1.5px solid var(--border); border-radius: 12px; outline: 0; background: var(--paper); color: var(--ink); transition: border-color .18s ease, box-shadow .18s ease; }
+    .field input:-webkit-autofill, .field input:-webkit-autofill:hover, .field input:-webkit-autofill:focus { -webkit-text-fill-color: var(--ink); -webkit-box-shadow: 0 0 0 1000px var(--paper) inset; caret-color: var(--ink); }
+    .field input:focus { border-color: var(--forest-light); box-shadow: 0 0 0 4px rgba(15, 90, 67, .22); }
+    .field input::placeholder { color: transparent; }
+    .field label { position: absolute; top: 50%; left: 16px; transform: translateY(-50%); color: var(--muted); font-size: 15px; pointer-events: none; transition: top .15s ease, transform .15s ease, font-size .15s ease, color .15s ease; }
+    .field input:focus + label, .field input:not(:placeholder-shown) + label, .field input:-webkit-autofill + label { top: 9px; transform: none; color: var(--muted); font-size: 11px; font-weight: 600; }
+    .field input:focus + label { color: var(--forest-light); }
+    .field input[aria-invalid="true"] { border-color: var(--error); }
+    .field input[aria-invalid="true"]:focus { box-shadow: 0 0 0 4px rgba(179, 38, 30, .15); }
+    .field-error { min-height: 18px; margin: 5px 2px 0; color: var(--error); font-size: 12px; }
+    .field-error:empty { display: none; }
+    .login-error { margin: -5px 0 0; color: var(--error); font-size: 13px; line-height: 1.45; }
+    .login-error[hidden] { display: none; }
+    .password-wrap { position: relative; }
+    .password-wrap input { padding-right: 56px; }
+    .eye-toggle { position: absolute; top: 7px; right: 7px; display: grid; width: 44px; height: 44px; place-items: center; border: 0; border-radius: 9px; background: transparent; color: var(--muted); }
+    .eye-toggle:hover { background: rgba(15, 90, 67, .07); color: var(--forest-light); }
+    .eye-toggle svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .caps-hint { min-height: 18px; margin: 6px 2px 0; color: #7d5a12; font-size: 12px; }
+    .caps-hint[hidden] { display: none; }
+    .form-options { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: -2px; font-size: 14px; }
+    .remember-option { display: inline-flex; align-items: center; gap: 9px; color: var(--muted); cursor: pointer; }
+    .remember-option input { width: 17px; height: 17px; margin: 0; accent-color: var(--forest-light); }
+    a { color: var(--forest-light); font-weight: 600; text-underline-offset: 3px; }
+    a:focus-visible, button:focus-visible, input:focus-visible { outline: 3px solid rgba(15, 90, 67, .35); outline-offset: 3px; }
+    .forgot-link { white-space: nowrap; }
+    .submit-button { display: flex; width: 100%; min-height: 54px; align-items: center; justify-content: center; gap: 10px; margin-top: 3px; border: 0; border-radius: 12px; background: var(--forest-light); color: #fff; font-size: 15px; font-weight: 600; transition: background .16s ease, transform .12s ease; }
+    .submit-button:hover:not(:disabled) { background: #14704f; }
+    .submit-button:active:not(:disabled) { transform: scale(.99); }
+    .submit-button:disabled { cursor: wait; opacity: .86; }
+    .spinner { width: 17px; height: 17px; border: 2px solid rgba(255, 255, 255, .45); border-top-color: white; border-radius: 50%; animation: spin .7s linear infinite; }
+    .invite-note { margin: 23px 0 0; color: var(--muted); font-size: 14px; line-height: 1.5; text-align: center; }
+    .copyright { position: absolute; right: 20px; bottom: 22px; left: 20px; color: var(--muted); font-size: 13px; text-align: center; }
+    .success-state { padding: 30px 0; text-align: center; }
+    .success-state[hidden] { display: none; }
+    .success-icon { display: grid; width: 68px; height: 68px; place-items: center; margin: 0 auto 22px; border-radius: 50%; background: var(--forest-light); color: white; }
+    .success-icon svg { width: 32px; height: 32px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+    .success-state h2 { margin-bottom: 9px; }
+    .success-state p { margin: 0; color: var(--muted); }
+
+    @keyframes receipt-drop { from { opacity: 0; transform: translateY(-22px) rotate(-2.2deg); } to { opacity: 1; transform: translateY(0) rotate(-2.2deg); } }
+    @keyframes sparkline-draw { to { stroke-dashoffset: 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @media (max-width: 900px) {
+      .page { grid-template-columns: 1fr; }
+      .form-panel { order: 1; min-height: 100vh; min-height: 100svh; padding: 54px 20px 78px; }
+      .brand-panel { order: 2; min-height: 0; gap: 0; padding: 22px 20px 26px; }
+      .brand-top { display: flex; align-items: center; gap: 20px; }
+      .brand-logo { gap: 8px; font-size: 21px; }
+      .store-icon { width: 34px; height: 34px; }
+      .brand-middle { display: block; width: auto; margin: 0; padding: 0; }
+      .brand-middle h1 { max-width: 13ch; font-size: 34px; }
+      .lead, .receipt, .module-pills { display: none; }
+      .copyright { bottom: 20px; }
+    }
+    @media (max-width: 480px) {
+      .form-panel { padding-right: 20px; padding-left: 20px; }
+      .form-content h2 { font-size: 33px; }
+      .form-subtitle { margin-bottom: 27px; }
+      .login-form { gap: 18px; }
+      .form-options { font-size: 13px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="brand-panel" aria-label="RetailQ overview">
+      <div class="brand-top">
+        <a class="brand-logo" href="#" aria-label="RetailQ home">
+          <svg class="store-icon" viewBox="0 0 48 48" aria-hidden="true">
+            <path d="M6 20 10 8h28l4 12M7 20h34v21H7zM18 41V28h12v13M6 20a6 6 0 0 0 12 0 6 6 0 0 0 12 0 6 6 0 0 0 12 0" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+          <span>RetailQ</span>
+        </a>
+      </div>
+
+      <div class="brand-middle">
+        <h1>Every sale<br>tells a story.</h1>
+        <p class="lead">See what's selling, who's buying and what's running low, all in one calm view.</p>
+
+        <div class="receipt" aria-label="Sample daily sales receipt">
+          <span class="receipt-sticker">+12% vs last Friday</span>
+          <div class="receipt-paper">
+            <div class="receipt-meta"><span>Today, 6:42 pm</span><span>Store 04</span></div>
+            <div class="receipt-item"><span>Basmati rice 5 kg</span><span>₹ 640</span></div>
+            <div class="receipt-item"><span>Cold-pressed oil</span><span>₹ 410</span></div>
+            <div class="receipt-item"><span>Tea, 250 g × 3</span><span>₹ 540</span></div>
+            <div class="receipt-total"><span>Sales today</span><strong>₹ 48,260</strong></div>
+            <svg class="sparkline" viewBox="0 0 280 40" role="img" aria-label="Sales trend rising through the day">
+              <path d="M2 32 C18 30 22 19 39 23 S60 30 76 20 98 24 113 16 132 22 148 12 170 19 186 10 210 18 225 8 246 13 263 4 278 7" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <ul class="module-pills" aria-label="RetailQ modules"><li>Sales</li><li>Customers</li><li>Inventory</li></ul>
+    </section>
+
+    <section class="form-panel" aria-label="Sign in">
+      <div class="form-content">
+        <div id="login-content">
+          <h2>Welcome back</h2>
+          <p class="form-subtitle">Sign in to check today's numbers.</p>
+
+          <form class="login-form" id="login-form" novalidate>
+            <div class="field">
+              <input id="username" name="username" type="text" placeholder=" " autocomplete="username" aria-describedby="username-error" required>
+              <label for="username">Username</label>
+              <p class="field-error" id="username-error" role="alert"></p>
+            </div>
+
+            <div class="field">
+              <div class="password-wrap">
+                <input id="password" name="password" type="password" placeholder=" " autocomplete="current-password" aria-describedby="password-error caps-hint" required>
+                <label for="password">Password</label>
+                <button class="eye-toggle" id="eye-toggle" type="button" aria-label="Show password" aria-pressed="false">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.4-6 9.5-6 9.5 6 9.5 6-3.4 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.7"/></svg>
+                </button>
+              </div>
+              <p class="field-error" id="password-error" role="alert"></p>
+              <p class="caps-hint" id="caps-hint" hidden>Caps Lock is on.</p>
+            </div>
+
+            <div class="form-options">
+              <label class="remember-option"><input id="remember" type="checkbox"> <span>Keep me signed in</span></label>
+              <a class="forgot-link" href="#forgot-password" id="forgot-link">Forgot password?</a>
+            </div>
+
+            <p class="login-error" id="login-error" role="alert" hidden></p>
+            <button class="submit-button" id="submit-button" type="submit"><span>Sign in</span></button>
+          </form>
+          <p class="invite-note">Need an account? Ask your store admin to invite you.</p>
+        </div>
+
+        <div class="success-state" id="success-state" role="status" aria-live="polite" hidden>
+          <span class="success-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="m5 12.5 4.3 4.2L19 7"/></svg>
+          </span>
+          <h2>You're in</h2>
+          <p>Opening your dashboard…</p>
+        </div>
+      </div>
+      <footer class="copyright">© 2026 RetailQ</footer>
+    </section>
+  </main>
+
+  <script>
+    (() => {
+      const form = document.getElementById('login-form');
+      const username = document.getElementById('username');
+      const password = document.getElementById('password');
+      const remember = document.getElementById('remember');
+      const button = document.getElementById('submit-button');
+      const eyeToggle = document.getElementById('eye-toggle');
+      const capsHint = document.getElementById('caps-hint');
+      const loginError = document.getElementById('login-error');
+      const fields = [
+        { input: username, error: document.getElementById('username-error'), message: 'Enter your username.' },
+        { input: password, error: document.getElementById('password-error'), message: 'Enter your password.' }
+      ];
+      let rememberedUsername = '';
+      try { rememberedUsername = localStorage.getItem('retailq-remembered-username') || ''; } catch {}
+
+      if (rememberedUsername) {
+        username.value = rememberedUsername;
+        remember.checked = true;
+      }
+
+      fetch('/api/auth/me', { credentials: 'same-origin' })
+        .then(response => { if (response.ok) window.location.replace('/'); })
+        .catch(() => {});
+
+      function clearError(field) {
+        field.error.textContent = '';
+        field.input.removeAttribute('aria-invalid');
+      }
+
+      fields.forEach(field => field.input.addEventListener('input', () => clearError(field)));
+
+      eyeToggle.addEventListener('click', () => {
+        const visible = password.type === 'password';
+        password.type = visible ? 'text' : 'password';
+        eyeToggle.setAttribute('aria-label', visible ? 'Hide password' : 'Show password');
+        eyeToggle.setAttribute('aria-pressed', String(visible));
+        password.focus();
+      });
+
+      password.addEventListener('keydown', event => { capsHint.hidden = !event.getModifierState('CapsLock'); });
+      password.addEventListener('keyup', event => { capsHint.hidden = !event.getModifierState('CapsLock'); });
+      password.addEventListener('blur', () => { capsHint.hidden = true; });
+
+      form.addEventListener('submit', event => {
+        event.preventDefault();
+        loginError.hidden = true;
+        let firstInvalid = null;
+
+        fields.forEach(field => {
+          const isEmpty = field.input === username ? !field.input.value.trim() : !field.input.value;
+          if (isEmpty) {
+            field.error.textContent = field.message;
+            field.input.setAttribute('aria-invalid', 'true');
+            firstInvalid ||= field.input;
+          } else {
+            clearError(field);
+          }
+        });
+
+        if (firstInvalid) {
+          firstInvalid.focus();
+          return;
+        }
+
+        try {
+          if (remember.checked) localStorage.setItem('retailq-remembered-username', username.value);
+          else localStorage.removeItem('retailq-remembered-username');
+        } catch {}
+
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner" aria-hidden="true"></span><span>Signing in…</span>';
+        fetch('/api/auth/login', {
+          method: 'POST',
+          credentials: 'same-origin',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username.value.trim(), password: password.value })
+        })
+          .then(async response => {
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok) throw new Error(response.status === 401 ? 'Invalid username or password.' : (data.error || 'Unable to sign in. Please try again.'));
+            document.getElementById('login-content').hidden = true;
+            document.getElementById('success-state').hidden = false;
+            window.setTimeout(() => window.location.replace('/'), 1100);
+          })
+          .catch(error => {
+            loginError.textContent = error.message || 'Unable to sign in. Please try again.';
+            loginError.hidden = false;
+            button.disabled = false;
+            button.innerHTML = '<span>Sign in</span>';
+          });
+      });
+    })();
+  </script>
+</body>
+</html>
