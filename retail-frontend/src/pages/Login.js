@@ -9,6 +9,7 @@ export default function Login() {
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [capsLockOn, setCapsLockOn] = useState(false);
   const { run, isLoading } = useActionLoading();
   const { login, user, isReady } = useAuth();
   const navigate = useNavigate();
@@ -42,9 +43,25 @@ export default function Login() {
         </div>
 
         <div className="login-brand-message">
-          <p className="login-brand-kicker">RETAIL, WITH CLARITY</p>
+          <p className="login-brand-kicker">YOUR STORE, AT A GLANCE</p>
           <h1>Every sale<br />tells a story.</h1>
-          <p>Understand your sales and customers with clarity, so you can grow with confidence.</p>
+          <p>See what’s selling, who’s buying and what’s running low, all in one calm view.</p>
+        </div>
+
+        <div className="login-preview" aria-label="Sample store snapshot">
+          <div className="login-preview-heading">
+            <strong>Store snapshot</strong><span>Sample</span>
+          </div>
+          <div className="login-preview-meta">
+            <span>Today, 6:42 pm · Store 04</span>
+            <strong>+12% <small>vs last Friday</small></strong>
+          </div>
+          <div className="login-preview-list">
+            <div><span className="login-preview-dot rice" /><span>Basmati rice, 5 kg</span><strong>₹640</strong></div>
+            <div><span className="login-preview-dot oil" /><span>Cold-pressed oil</span><strong>₹410</strong></div>
+            <div><span className="login-preview-dot tea" /><span>Tea, 250 g × 3</span><strong>₹540</strong></div>
+          </div>
+          <div className="login-preview-total"><span>Sales today</span><strong>₹48,260</strong></div>
         </div>
 
         <p className="login-brand-footer">SALES · CUSTOMERS · INVENTORY</p>
@@ -55,8 +72,8 @@ export default function Login() {
       <section className="login-panel" aria-label="Sign in">
         <div className="login-form-shell">
           <p className="login-eyebrow">WELCOME BACK</p>
-          <h2>Sign in to your account</h2>
-          <p className="login-intro">Enter your RetailIQ username and password to continue.</p>
+          <h2>Sign in to check today’s numbers.</h2>
+          <p className="login-intro">Use your RetailIQ username and password to continue.</p>
 
           <form className="login-form" onSubmit={run('login', handleSubmit)}>
             <div className="login-field">
@@ -71,7 +88,9 @@ export default function Login() {
               <div className="login-password-wrap">
                 <input id="login-password" className="form-input" type={showPassword ? 'text' : 'password'}
                   autoComplete="current-password" placeholder="Enter your password" value={form.password}
-                  onChange={e => setForm({ ...form, password: e.target.value })} required />
+                  onChange={e => setForm({ ...form, password: e.target.value })}
+                  onKeyUp={e => setCapsLockOn(e.getModifierState('CapsLock'))}
+                  onBlur={() => setCapsLockOn(false)} required />
                 <button type="button" className="login-password-toggle"
                   aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword}
                   onClick={() => setShowPassword(value => !value)}>
@@ -82,12 +101,14 @@ export default function Login() {
                   </svg>
                 </button>
               </div>
+              {capsLockOn && <p className="login-caps-warning" role="status">Caps Lock is on.</p>}
             </div>
 
             {error && <p className="login-error" role="alert">{error}</p>}
             <LoadingButton type="submit" className="login-submit" loading={isLoading('login')}
               disabled={!isReady} loadingLabel="Signing in…">Sign in</LoadingButton>
           </form>
+          <p className="login-account-note">Need an account? Ask your store admin to invite you.</p>
         </div>
 
         <footer className="login-copyright">Copyright {new Date().getFullYear()} RetailIQ</footer>

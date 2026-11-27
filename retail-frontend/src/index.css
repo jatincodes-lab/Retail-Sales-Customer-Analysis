@@ -330,59 +330,82 @@ button,input,textarea,select{font-family:'DM Sans',sans-serif;}
 }
 
 /* RetailIQ sign-in */
-.login-page{min-height:100vh;display:grid;grid-template-columns:minmax(0,.94fr) minmax(0,1.06fr);background:#fbf8f1;}
-.login-brand-panel{position:relative;isolation:isolate;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(32px,5vw,72px);background:linear-gradient(145deg,#0b4032,#0a342a);color:#fbf8f1;}
+.login-page{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);background:var(--bg2);}
+.login-brand-panel{position:relative;isolation:isolate;overflow:hidden;min-height:100vh;display:flex;flex-direction:column;justify-content:space-between;padding:clamp(30px,5vw,68px);background:#f4f7f5;color:var(--text);}
 .login-brand-logo,.login-brand-message,.login-brand-footer{position:relative;z-index:1;}
-.login-brand-logo{display:flex;align-items:center;gap:14px;color:#fff;font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(25px,2.8vw,36px);font-weight:800;letter-spacing:-.055em;}
-.login-brand-icon{width:52px;height:52px;display:grid;place-items:center;color:#e9ddb4;}
+.login-brand-logo{display:flex;align-items:center;gap:12px;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(25px,2.8vw,34px);font-weight:800;letter-spacing:-.055em;}
+.login-brand-icon{width:48px;height:48px;display:grid;place-items:center;color:var(--accent);}
 .login-brand-icon svg{width:100%;height:100%;}
-.login-brand-message{width:min(100%,560px);margin-block:auto;padding:70px 0 58px;}
-.login-brand-kicker,.login-eyebrow{margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:.2em;}
-.login-brand-kicker{color:#c6d8c8;}
-.login-brand-message h1{max-width:590px;margin:0;color:#fffdf6;font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(50px,6vw,82px);font-weight:700;line-height:.99;letter-spacing:-.075em;}
-.login-brand-message>p:last-child{max-width:490px;margin:27px 0 0;color:#e0e9df;font-size:clamp(16px,1.45vw,19px);line-height:1.6;}
-.login-brand-footer{margin:0;color:#c4d6c8;font-size:10px;font-weight:600;letter-spacing:.16em;}
-.login-brand-orbit{position:absolute;z-index:0;border:1px solid rgba(211,229,208,.35);border-radius:50%;pointer-events:none;}
-.login-brand-orbit-one{width:760px;height:760px;left:-435px;bottom:-570px;}
-.login-brand-orbit-two{width:540px;height:540px;left:170px;bottom:-455px;}
-.login-panel{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:64px clamp(32px,7vw,112px) 92px;background:#fbf8f1;}
-.login-form-shell{width:100%;max-width:520px;}
-.login-eyebrow{margin-bottom:17px;color:#174b3d;}
-.login-form-shell h2{margin:0;color:#14231f;font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(32px,3.4vw,46px);font-weight:700;line-height:1.12;letter-spacing:-.06em;}
-.login-intro{margin:13px 0 35px;color:#68736d;font-size:15px;line-height:1.6;}
-.login-form{display:flex;flex-direction:column;gap:24px;}
-.login-field label{display:block;margin-bottom:8px;color:#17231f;font-size:14px;font-weight:700;}
-.login-field .form-input{height:56px;padding:0 16px;border:1px solid #aebbb2;border-radius:7px;background:transparent;color:#17231f;font-size:15px;}
-.login-field .form-input::placeholder{color:#838b85;}
-.login-field .form-input:focus{border-color:#155440;box-shadow:0 0 0 3px rgba(21,84,64,.12);}
+.login-brand-message{width:min(100%,560px);margin:auto 0;padding:42px 0 28px;}
+.login-brand-kicker,.login-eyebrow{margin:0 0 14px;font-size:11px;font-weight:700;letter-spacing:.16em;}
+.login-brand-kicker{color:var(--accent);}
+.login-brand-message h1{max-width:560px;margin:0;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(46px,5.4vw,72px);font-weight:800;line-height:1.02;letter-spacing:-.07em;}
+.login-brand-message>p:last-child{max-width:490px;margin:20px 0 0;color:var(--text2);font-size:clamp(15px,1.3vw,18px);line-height:1.65;}
+.login-preview{position:relative;z-index:1;width:min(100%,500px);padding:17px 19px 13px;border:1px solid #dce5ed;border-radius:14px;background:rgba(255,255,255,.9);box-shadow:0 12px 32px rgba(30,41,59,.06);}
+.login-preview-heading,.login-preview-meta,.login-preview-list>div,.login-preview-total{display:flex;align-items:center;}
+.login-preview-heading,.login-preview-meta,.login-preview-total{justify-content:space-between;gap:12px;}
+.login-preview-heading strong{font-size:13px;}
+.login-preview-heading>span{padding:3px 8px;border-radius:20px;background:#eff6ff;color:var(--accent);font-size:10px;font-weight:700;}
+.login-preview-meta{margin:11px 0;padding-bottom:10px;border-bottom:1px solid var(--border);color:var(--text2);font-size:11px;}
+.login-preview-meta strong{color:var(--green);font-size:13px;white-space:nowrap;}
+.login-preview-meta small{font-size:10px;font-weight:500;}
+.login-preview-list{display:grid;gap:8px;}
+.login-preview-list>div{gap:9px;color:var(--text2);font-size:12px;}
+.login-preview-list>div strong{margin-left:auto;color:var(--text);font-size:12px;}
+.login-preview-dot{width:8px;height:8px;flex:none;border-radius:50%;background:#fbbf24;}
+.login-preview-dot.oil{background:#22c55e;}.login-preview-dot.tea{background:#8b5cf6;}
+.login-preview-total{margin-top:12px;padding-top:10px;border-top:1px solid var(--border);color:var(--text2);font-size:12px;}
+.login-preview-total strong{color:var(--accent);font-family:'Plus Jakarta Sans',sans-serif;font-size:17px;}
+.login-brand-footer{margin:22px 0 0;color:var(--text2);font-size:10px;font-weight:600;letter-spacing:.14em;}
+.login-brand-orbit{position:absolute;z-index:0;border:1px solid rgba(37,99,235,.1);border-radius:50%;pointer-events:none;}
+.login-brand-orbit-one{width:700px;height:700px;left:-450px;bottom:-550px;}
+.login-brand-orbit-two{width:500px;height:500px;left:170px;bottom:-430px;}
+.login-panel{position:relative;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:64px clamp(28px,7vw,100px) 88px;background:var(--bg2);}
+.login-form-shell{width:100%;max-width:470px;}
+.login-eyebrow{margin-bottom:14px;color:var(--accent);}
+.login-form-shell h2{margin:0;color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:clamp(31px,3.2vw,43px);font-weight:800;line-height:1.13;letter-spacing:-.06em;}
+.login-intro{margin:12px 0 32px;color:var(--text2);font-size:15px;line-height:1.6;}
+.login-form{display:flex;flex-direction:column;gap:22px;}
+.login-field label{display:block;margin-bottom:8px;color:var(--text);font-size:14px;font-weight:700;}
+.login-field .form-input{height:54px;padding:0 15px;border:1px solid var(--border);border-radius:8px;background:#fff;color:var(--text);font-size:15px;}
+.login-field .form-input::placeholder{color:var(--text3);}
+.login-field .form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.12);}
 .login-password-wrap{position:relative;}
 .login-password-wrap .form-input{padding-right:54px;}
-.login-password-toggle{position:absolute;top:50%;right:10px;width:36px;height:36px;display:grid;place-items:center;transform:translateY(-50%);border-radius:6px;background:transparent;color:#56645c;}
-.login-password-toggle:hover{background:rgba(21,84,64,.08);color:#124735;}
-.login-password-toggle:focus-visible{outline:3px solid rgba(21,84,64,.25);outline-offset:2px;}
+.login-password-toggle{position:absolute;top:50%;right:10px;width:36px;height:36px;display:grid;place-items:center;transform:translateY(-50%);border-radius:6px;background:transparent;color:var(--text2);}
+.login-password-toggle:hover{background:#eff6ff;color:var(--accent);}
+.login-password-toggle:focus-visible{outline:3px solid rgba(37,99,235,.25);outline-offset:2px;}
 .login-password-toggle svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
-.login-error{margin:-10px 0 0;padding:11px 13px;border:1px solid #ecc5bd;border-radius:7px;background:#fff2ef;color:#9b3428;font-size:13px;}
-.login-submit{width:100%;min-height:58px;justify-content:center;margin-top:2px;border-radius:7px;background:#084a38;color:#fff;font-size:16px;font-weight:700;transition:background .18s ease,transform .18s ease;}
-.login-submit:hover:not(:disabled){transform:translateY(-1px);background:#0b5a43;}
-.login-submit:focus-visible{outline:3px solid rgba(21,84,64,.28);outline-offset:3px;}
-.login-copyright{position:absolute;right:24px;bottom:26px;left:24px;color:#707a74;font-size:13px;text-align:center;}
+.login-caps-warning{margin-top:7px;color:var(--orange);font-size:12px;font-weight:600;}
+.login-error{margin:-8px 0 0;padding:11px 13px;border:1px solid #fecaca;border-radius:8px;background:#fef2f2;color:#b91c1c;font-size:13px;}
+.login-submit{width:100%;min-height:54px;justify-content:center;margin-top:2px;border-radius:8px;background:var(--accent);color:#fff;font-size:15px;font-weight:700;transition:background .18s ease,transform .18s ease;}
+.login-submit:hover:not(:disabled){transform:translateY(-1px);background:var(--accent2);}
+.login-submit:focus-visible{outline:3px solid rgba(37,99,235,.25);outline-offset:3px;}
+.login-account-note{margin:22px 0 0;color:var(--text2);font-size:13px;line-height:1.6;text-align:center;}
+.login-copyright{position:absolute;right:24px;bottom:24px;left:24px;color:var(--text2);font-size:12px;text-align:center;}
 @media(max-width:900px){
   .login-page{grid-template-columns:1fr;}
-  .login-brand-panel{min-height:420px;padding:34px clamp(28px,7vw,64px);}
-  .login-brand-message{padding:55px 0 38px;}
-  .login-brand-message h1{font-size:clamp(48px,8vw,72px);}
-  .login-panel{min-height:640px;padding:60px 28px 88px;}
+  .login-brand-panel{min-height:auto;padding:30px clamp(26px,7vw,64px);}
+  .login-brand-message{padding:45px 0 28px;}
+  .login-brand-message h1{font-size:clamp(46px,8vw,68px);}
+  .login-preview{max-width:560px;}
+  .login-panel{min-height:600px;padding:56px 28px 82px;}
 }
 @media(max-width:520px){
-  .login-brand-panel{min-height:390px;padding:26px 24px;}
-  .login-brand-logo{gap:10px;font-size:27px;}
-  .login-brand-icon{width:42px;height:42px;}
-  .login-brand-message{padding:48px 0 34px;}
-  .login-brand-message h1{font-size:clamp(44px,12vw,60px);}
-  .login-brand-message>p:last-child{margin-top:18px;font-size:15px;}
-  .login-brand-footer{font-size:9px;}
-  .login-panel{min-height:590px;padding:52px 24px 80px;}
-  .login-intro{margin-bottom:28px;font-size:14px;}
-  .login-form{gap:20px;}
-  .login-copyright{bottom:20px;font-size:12px;}
+  .login-brand-panel{padding:24px 22px;}
+  .login-brand-logo{gap:9px;font-size:26px;}
+  .login-brand-icon{width:40px;height:40px;}
+  .login-brand-message{padding:38px 0 24px;}
+  .login-brand-message h1{font-size:clamp(42px,12vw,56px);}
+  .login-brand-message>p:last-child{margin-top:14px;font-size:14px;}
+  .login-preview{padding:14px 13px 11px;}
+  .login-preview-meta{align-items:flex-start;}
+  .login-preview-meta span{max-width:56%;}
+  .login-preview-meta strong{font-size:12px;}
+  .login-preview-meta small{display:block;}
+  .login-brand-footer{margin-top:16px;font-size:9px;}
+  .login-panel{min-height:550px;padding:48px 22px 76px;}
+  .login-intro{margin-bottom:27px;font-size:14px;}
+  .login-form{gap:19px;}
+  .login-copyright{bottom:18px;font-size:11px;}
 }
