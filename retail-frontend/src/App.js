@@ -46,8 +46,9 @@ const ROLE_STYLE = {
 };
 
 function Layout() {
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn, isReady, user } = useAuth();
   const location = useLocation();
+  if (!isReady) return <div role="status" style={{ padding: 24 }}>Restoring session…</div>;
   if (!isLoggedIn) return <Navigate to="/login" replace />;
 
   const titleEntry = PAGE_TITLES[location.pathname];

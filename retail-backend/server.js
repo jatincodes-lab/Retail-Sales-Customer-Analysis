@@ -5,7 +5,7 @@ const pool = require('./config/db');
 const app = express();
 const origins = process.env.CORS_ORIGIN ? process.env.CORS_ORIGIN.split(',').map(value => value.trim()).filter(Boolean) : null;
 
-app.use(cors({ origin: origins || (process.env.NODE_ENV === 'production' ? false : true) }));
+app.use(cors({ origin: origins || (process.env.NODE_ENV === 'production' ? false : true), credentials: true }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/products', require('./routes/products'));

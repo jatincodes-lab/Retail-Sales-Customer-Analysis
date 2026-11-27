@@ -4,6 +4,12 @@ const jwt = require('jsonwebtoken');
 const pool = require('../config/db');
 const sendError = require('../utils/errors');
 const router = express.Router();
+const sessionCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',
+  path: '/',
+};
 
 router.post('/login', async (req, res) => {
   const { username, password } = req.body || {};
@@ -21,10 +27,21 @@ router.post('/login', async (req, res) => {
     const token = jwt.sign(
       { id: user.user_id, username: user.username, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: '7d' }
+      { expiresIn: '30d' }
     );
-    res.json({ token, user: { id: user.user_id, username: user.username, role: user.role } });
+    res.cookie('retail_session', token, { ...sessionCookieOptions, maxAge: 30 * 24 * 60 * 60 * 1000 });
+    res.json({ user: { id: user.user_id, username: user.username, role: user.role } });
   } catch (err) { sendError(res, err); }
+});
+
+router.get('/me', require('../middleware/auth'), (req, res) => {
+  const { id, username, role } = req.user;
+  res.json({ user: { id, username, role } });
+});
+
+router.post('/logout', (req, res) => {
+  res.clearCookie('retail_session', sessionCookieOptions);
+  res.sendStatus(204);
 });
 
 module.exports = router;
