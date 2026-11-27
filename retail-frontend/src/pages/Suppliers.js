@@ -79,9 +79,9 @@ export default function Suppliers() {
               <div className="form-group"><label>Contact Person</label>
                 <input className="form-input" value={form.contact_person}
                   onChange={e=>setForm({...form,contact_person:e.target.value})} /></div>
-              <div className="form-group"><label>Phone</label>
-                <input className="form-input" value={form.phone}
-                  onChange={e=>setForm({...form,phone:e.target.value})} /></div>
+              <div className="form-group"><label>Phone (up to 10 digits)</label>
+                <input className="form-input" type="tel" inputMode="numeric" maxLength={10} value={form.phone}
+                  onChange={e=>setForm({...form,phone:e.target.value.replace(/\D/g,'').slice(0,10)})} /></div>
               <div className="form-group"><label>Email</label>
                 <input className="form-input" type="email" value={form.email}
                   onChange={e=>setForm({...form,email:e.target.value})} /></div>

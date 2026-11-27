@@ -53,7 +53,8 @@ export default function Employees() {
 
   const flash = (text, type='success') => { setMsg({text,type}); setTimeout(()=>setMsg({text:'',type:''}),4000); };
   const updateAddForm = e => {
-    const { name, value } = e.target;
+    const { name } = e.target;
+    const value = name === 'phone' ? e.target.value.replace(/\D/g, '').slice(0, 10) : e.target.value;
     setAddForm(form => ({ ...form, [name]: value }));
     setAddError('');
   };
@@ -87,15 +88,13 @@ export default function Employees() {
     const phone = addForm.phone.trim();
     const salaryText = String(addForm.base_salary).trim();
     const base_salary = Number(salaryText);
-    const phoneDigits = phone.replace(/\D/g, '').length;
-
     if (!first_name || !last_name) return setAddError('First and last name are required.');
     if (first_name.length > 80 || last_name.length > 80) return setAddError('Names must be 80 characters or fewer.');
     if (!/^\d+(?:\.\d{1,2})?$/.test(salaryText) || !Number.isFinite(base_salary) || base_salary > 99999999.99)
       return setAddError('Enter a salary from Rs. 0 to Rs. 99,999,999.99 with up to 2 decimal places.');
     if (email.length > 100) return setAddError('Email must be 100 characters or fewer.');
-    if (phone && (!/^\+?[\d\s().-]+$/.test(phone) || phone.length > 20 || phoneDigits < 7 || phoneDigits > 15))
-      return setAddError('Enter a valid phone with 7–15 digits; +, spaces, parentheses, and hyphens are allowed.');
+    if (phone && !/^\d{1,10}$/.test(phone))
+      return setAddError('Phone must contain digits only and be 10 digits or fewer.');
 
     try {
       await api.post('/employees', { ...addForm, first_name, last_name, email: email || null, phone: phone || null, base_salary, address: addForm.address.trim() || null });
@@ -438,9 +437,9 @@ export default function Employees() {
                     onChange={updateAddForm} maxLength={100} />
                 </div>
                 <div className="form-group">
-                  <label>Phone</label>
-                  <input className="form-input" name="phone" type="tel" value={addForm.phone}
-                    onChange={updateAddForm} maxLength={20} />
+                  <label>Phone (up to 10 digits)</label>
+                  <input className="form-input" name="phone" type="tel" inputMode="numeric" value={addForm.phone}
+                    onChange={updateAddForm} maxLength={10} />
                 </div>
               </div>
               <div className="form-group">

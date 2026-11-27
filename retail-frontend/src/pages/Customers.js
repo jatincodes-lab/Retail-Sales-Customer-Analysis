@@ -130,9 +130,9 @@ export default function Customers() {
               <div className="form-group"><label>Email</label>
                 <input className="form-input" type="email" value={form.email}
                   onChange={e => setForm({...form,email:e.target.value})} /></div>
-              <div className="form-group"><label>Phone</label>
-                <input className="form-input" value={form.phone}
-                  onChange={e => setForm({...form,phone:e.target.value})} /></div>
+              <div className="form-group"><label>Phone (up to 10 digits)</label>
+                <input className="form-input" type="tel" inputMode="numeric" maxLength={10} value={form.phone}
+                  onChange={e => setForm({...form,phone:e.target.value.replace(/\D/g,'').slice(0,10)})} /></div>
             </div>
             <div className="form-group"><label>Address</label>
               <input className="form-input" value={form.address}
