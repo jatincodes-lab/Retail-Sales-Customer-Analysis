@@ -75,14 +75,15 @@ export default function Products() {
     <div className="content">
       <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:4}}>
         <div><h1 className="page-title">Products</h1><p className="page-sub">{products.length} products — vw_product_details</p></div>
-        {user?.role!=='cashier' && <button className="btn btn-primary" onClick={()=>setShowAdd(!showAdd)}>{showAdd?'✕ Cancel':'+ Add Product'}</button>}
+        {user?.role!=='cashier' && <button className="btn btn-primary" onClick={()=>setShowAdd(true)}>+ Add Product</button>}
       </div>
 
       {msg.text && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {showAdd && (
-        <div className="card" style={{marginBottom:20,borderColor:'#bfdbfe'}}>
-          <h3 style={{fontSize:15,fontWeight:700,marginBottom:14}}>Add Product</h3>
+        <div className="overlay" onClick={()=>setShowAdd(false)}>
+          <div className="modal" style={{maxWidth:680}} role="dialog" aria-modal="true" aria-labelledby="add-product-title" onClick={e=>e.stopPropagation()}>
+          <h3 id="add-product-title">Add Product</h3>
           <form onSubmit={run('add-product', addProduct)}>
             <div className="form-grid">
               <div className="form-group"><label>Product Name</label><input className="form-input" value={form.product_name} onChange={e=>setForm({...form,product_name:e.target.value})} required/></div>
@@ -96,8 +97,12 @@ export default function Products() {
                   <option value="">Select...</option>{suppliers.map(s=><option key={s.supplier_id} value={s.supplier_id}>{s.supplier_name}</option>)}</select></div>
               <div className="form-group"><label>Reorder Level</label><input className="form-input" type="number" value={form.reorder_level} onChange={e=>setForm({...form,reorder_level:e.target.value})}/></div>
             </div>
-            <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-product')} loadingLabel="Adding…">Add Product</LoadingButton>
+            <div style={{display:'flex',gap:10}}>
+                <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-product')} loadingLabel="Adding…">Add Product</LoadingButton>
+                <button type="button" className="btn btn-outline" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
           </form>
+        </div>
         </div>
       )}
 

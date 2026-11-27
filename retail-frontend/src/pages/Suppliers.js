@@ -59,7 +59,7 @@ export default function Suppliers() {
           <p className="page-sub">{suppliers.length} suppliers with purchase history</p>
         </div>
         {user?.role !== 'cashier' && (
-          <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>
+          <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
             {showAdd ? '✕ Cancel' : '+ Add Supplier'}
           </button>
         )}
@@ -68,8 +68,9 @@ export default function Suppliers() {
       {msg.text && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {showAdd && (
-        <div className="card" style={{ marginBottom:16, borderColor:'#bfdbfe' }}>
-          <h3 style={{ fontSize:15, fontWeight:700, marginBottom:14 }}>Add Supplier</h3>
+        <div className="overlay" onClick={()=>setShowAdd(false)}>
+          <div className="modal" style={{maxWidth:600}} role="dialog" aria-modal="true" aria-labelledby="add-supplier-title" onClick={e=>e.stopPropagation()}>
+          <h3 id="add-supplier-title">Add Supplier</h3>
           <form onSubmit={run('add-supplier', addSupplier)}>
             <div className="form-grid">
               <div className="form-group"><label>Supplier Name</label>
@@ -88,8 +89,12 @@ export default function Suppliers() {
             <div className="form-group"><label>Address</label>
               <input className="form-input" value={form.address}
                 onChange={e=>setForm({...form,address:e.target.value})} /></div>
-            <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-supplier')} loadingLabel="Adding…">Add Supplier</LoadingButton>
+            <div style={{display:'flex',gap:10}}>
+                <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-supplier')} loadingLabel="Adding…">Add Supplier</LoadingButton>
+                <button type="button" className="btn btn-outline" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
           </form>
+        </div>
         </div>
       )}
 

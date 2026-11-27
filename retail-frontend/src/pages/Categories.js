@@ -45,7 +45,7 @@ export default function Categories() {
           <h1 className="page-title">Categories</h1>
           <p className="page-sub">{categories.length} product categories</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>
+        <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
           {showAdd ? '✕ Cancel' : '+ Add Category'}
         </button>
       </div>
@@ -53,8 +53,9 @@ export default function Categories() {
       {msg.text && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {showAdd && (
-        <div className="card" style={{ marginBottom:16, borderColor:'#bfdbfe' }}>
-          <h3 style={{ fontSize:15, fontWeight:700, marginBottom:14 }}>Add Category</h3>
+        <div className="overlay" onClick={()=>setShowAdd(false)}>
+          <div className="modal" style={{maxWidth:560}} role="dialog" aria-modal="true" aria-labelledby="add-category-title" onClick={e=>e.stopPropagation()}>
+          <h3 id="add-category-title">Add Category</h3>
           <form onSubmit={run('add-category', addCategory)}>
             <div className="form-grid">
               <div className="form-group">
@@ -68,8 +69,12 @@ export default function Categories() {
                   onChange={e => setForm({...form, description:e.target.value})} />
               </div>
             </div>
-            <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-category')} loadingLabel="Adding…">Add Category</LoadingButton>
+            <div style={{display:'flex',gap:10}}>
+                <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-category')} loadingLabel="Adding…">Add Category</LoadingButton>
+                <button type="button" className="btn btn-outline" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
           </form>
+        </div>
         </div>
       )}
 

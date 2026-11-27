@@ -79,7 +79,7 @@ export default function Customers() {
           <h1 className="page-title">Customers</h1>
           <p className="page-sub">{customers.length} registered customers</p>
         </div>
-        <button className="btn btn-primary" onClick={() => setShowAdd(!showAdd)}>
+        <button className="btn btn-primary" onClick={() => setShowAdd(true)}>
           {showAdd ? '✕ Cancel' : '+ Add Customer'}
         </button>
       </div>
@@ -116,8 +116,9 @@ export default function Customers() {
       {msg.text && <div className={`alert alert-${msg.type}`}>{msg.text}</div>}
 
       {showAdd && (
-        <div className="card" style={{ marginBottom:16, borderColor:'#bfdbfe' }}>
-          <h3 style={{ fontSize:15, fontWeight:700, marginBottom:14 }}>Add Customer</h3>
+        <div className="overlay" onClick={()=>setShowAdd(false)}>
+          <div className="modal" style={{maxWidth:600}} role="dialog" aria-modal="true" aria-labelledby="add-customer-title" onClick={e=>e.stopPropagation()}>
+          <h3 id="add-customer-title">Add Customer</h3>
           <form onSubmit={run('add-customer', addCustomer)}>
             <div className="form-grid">
               <div className="form-group"><label>First Name</label>
@@ -136,8 +137,12 @@ export default function Customers() {
             <div className="form-group"><label>Address</label>
               <input className="form-input" value={form.address}
                 onChange={e => setForm({...form,address:e.target.value})} /></div>
-            <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-customer')} loadingLabel="Adding…">Add Customer</LoadingButton>
+            <div style={{display:'flex',gap:10}}>
+                <LoadingButton type="submit" className="btn btn-primary btn-sm" loading={isLoading('add-customer')} loadingLabel="Adding…">Add Customer</LoadingButton>
+                <button type="button" className="btn btn-outline" onClick={()=>setShowAdd(false)}>Cancel</button>
+              </div>
           </form>
+        </div>
         </div>
       )}
 
