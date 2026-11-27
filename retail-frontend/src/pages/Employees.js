@@ -43,6 +43,7 @@ export default function Employees() {
 
   // Forms
   const [addForm,    setAddForm]    = useState({ first_name:'', last_name:'', email:'', phone:'', role:'cashier', base_salary:'', address:'' });
+  const [addError,   setAddError]   = useState('');
   const [assignForm, setAssignForm] = useState({ duty_id:'', shift:'morning', notes:'', manager_employee_id:'' });
   const [payForm,    setPayForm]    = useState({ amount:'', month_year:'', payment_method:'cash', notes:'' });
 
@@ -51,6 +52,11 @@ export default function Employees() {
   const isManager = user?.role === 'manager';
 
   const flash = (text, type='success') => { setMsg({text,type}); setTimeout(()=>setMsg({text:'',type:''}),4000); };
+  const updateAddForm = e => {
+    const { name, value } = e.target;
+    setAddForm(form => ({ ...form, [name]: value }));
+    setAddError('');
+  };
 
   const load = async () => {
     try {
@@ -75,13 +81,30 @@ export default function Employees() {
 
   const addEmployee = async e => {
     e.preventDefault();
+    const first_name = addForm.first_name.trim();
+    const last_name = addForm.last_name.trim();
+    const email = addForm.email.trim();
+    const phone = addForm.phone.trim();
+    const salaryText = String(addForm.base_salary).trim();
+    const base_salary = Number(salaryText);
+    const phoneDigits = phone.replace(/\D/g, '').length;
+
+    if (!first_name || !last_name) return setAddError('First and last name are required.');
+    if (first_name.length > 80 || last_name.length > 80) return setAddError('Names must be 80 characters or fewer.');
+    if (!/^\d+(?:\.\d{1,2})?$/.test(salaryText) || !Number.isFinite(base_salary) || base_salary > 99999999.99)
+      return setAddError('Enter a salary from Rs. 0 to Rs. 99,999,999.99 with up to 2 decimal places.');
+    if (email.length > 100) return setAddError('Email must be 100 characters or fewer.');
+    if (phone && (!/^\+?[\d\s().-]+$/.test(phone) || phone.length > 20 || phoneDigits < 7 || phoneDigits > 15))
+      return setAddError('Enter a valid phone with 7–15 digits; +, spaces, parentheses, and hyphens are allowed.');
+
     try {
-      await api.post('/employees', addForm);
+      await api.post('/employees', { ...addForm, first_name, last_name, email: email || null, phone: phone || null, base_salary, address: addForm.address.trim() || null });
       flash('Employee added!');
       setAddModal(false);
+      setAddError('');
       setAddForm({ first_name:'', last_name:'', email:'', phone:'', role:'cashier', base_salary:'', address:'' });
       await load();
-    } catch(err) { flash(err.response?.data?.error || 'Error', 'error'); }
+    } catch(err) { setAddError(err.response?.data?.error || 'Could not add employee.'); }
   };
 
   const assignDuty = async e => {
@@ -145,7 +168,7 @@ export default function Employees() {
           </p>
         </div>
         {isAdmin && (
-          <button className="btn btn-primary" onClick={() => setAddModal(true)}>+ Add Employee</button>
+          <button className="btn btn-primary" onClick={() => { setAddError(''); setAddModal(true); }}>+ Add Employee</button>
         )}
       </div>
 
@@ -381,22 +404,23 @@ export default function Employees() {
           <div className="modal" style={{ maxWidth:540 }} onClick={e => e.stopPropagation()}>
             <h3>Add Employee</h3>
             <p className="modal-sub">New employee will be added to the HR system</p>
+            {addError && <div className="alert alert-error" role="alert">{addError}</div>}
             <form onSubmit={run('add-employee', addEmployee)}>
               <div className="form-grid">
                 <div className="form-group">
                   <label>First Name</label>
-                  <input className="form-input" value={addForm.first_name}
-                    onChange={e => setAddForm({...addForm, first_name:e.target.value})} required />
+                  <input className="form-input" name="first_name" value={addForm.first_name}
+                    onChange={updateAddForm} maxLength={80} required />
                 </div>
                 <div className="form-group">
                   <label>Last Name</label>
-                  <input className="form-input" value={addForm.last_name}
-                    onChange={e => setAddForm({...addForm, last_name:e.target.value})} required />
+                  <input className="form-input" name="last_name" value={addForm.last_name}
+                    onChange={updateAddForm} maxLength={80} required />
                 </div>
                 <div className="form-group">
                   <label>Role</label>
-                  <select className="form-input" value={addForm.role}
-                    onChange={e => setAddForm({...addForm, role:e.target.value})}>
+                  <select className="form-input" name="role" value={addForm.role}
+                    onChange={updateAddForm} required>
                     <option value="cashier">Cashier</option>
                     <option value="manager">Manager</option>
                     <option value="stock_handler">Stock Handler</option>
@@ -405,24 +429,24 @@ export default function Employees() {
                 </div>
                 <div className="form-group">
                   <label>Base Salary (Rs.)</label>
-                  <input className="form-input" type="number" value={addForm.base_salary}
-                    onChange={e => setAddForm({...addForm, base_salary:e.target.value})} required />
+                  <input className="form-input" name="base_salary" type="text" inputMode="decimal" value={addForm.base_salary}
+                    onChange={updateAddForm} required />
                 </div>
                 <div className="form-group">
                   <label>Email</label>
-                  <input className="form-input" type="email" value={addForm.email}
-                    onChange={e => setAddForm({...addForm, email:e.target.value})} />
+                  <input className="form-input" name="email" type="email" value={addForm.email}
+                    onChange={updateAddForm} maxLength={100} />
                 </div>
                 <div className="form-group">
                   <label>Phone</label>
-                  <input className="form-input" value={addForm.phone}
-                    onChange={e => setAddForm({...addForm, phone:e.target.value})} />
+                  <input className="form-input" name="phone" type="tel" value={addForm.phone}
+                    onChange={updateAddForm} maxLength={20} />
                 </div>
               </div>
               <div className="form-group">
                 <label>Address</label>
-                <input className="form-input" value={addForm.address}
-                  onChange={e => setAddForm({...addForm, address:e.target.value})} />
+                <input className="form-input" name="address" value={addForm.address}
+                  onChange={updateAddForm} />
               </div>
               <div style={{ display:'flex', gap:10 }}>
                 <LoadingButton type="submit" className="btn btn-primary" loading={isLoading('add-employee')} loadingLabel="Adding…">Add Employee</LoadingButton>
