@@ -184,7 +184,3 @@ Set `TEST_DATABASE_URL` to a disposable PostgreSQL database where the user can c
 | GET | `/api/dashboard` | Yes | Live stats + all views |
 
 ---
-
-## 🔗 Repository
-
-[github.com/SMPanther/retail-system](https://github.com/SMPanther/retail-system)
