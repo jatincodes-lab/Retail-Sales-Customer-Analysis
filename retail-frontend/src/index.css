@@ -93,6 +93,21 @@ select.form-input option{background:white;}
 .modal{background:white;border-radius:14px;padding:28px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;}
 .modal h3{font-size:18px;font-weight:700;margin-bottom:4px;}
 .modal-sub{color:var(--text2);font-size:13px;margin-bottom:20px;}
+.sales-filter-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:16px;padding:14px 18px;background:var(--white);border:1px solid var(--border);border-radius:14px;}
+.sales-filter-controls{display:flex;align-items:flex-end;gap:10px;flex:none;}
+.sales-filter-field label{display:block;margin-bottom:6px;color:var(--text2);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;}
+.sales-filter-field .form-input{width:180px;min-height:40px;}
+.sales-clear-date{min-height:40px;}
+.sales-filter-stats{display:grid;grid-template-columns:repeat(4,minmax(88px,1fr));gap:8px;flex:1;max-width:560px;}
+.sales-filter-stat{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:54px;padding:6px 10px;border:1px solid var(--border);border-radius:10px;background:#fbfcfb;text-align:center;}
+.sales-filter-stat strong{font-size:17px;font-weight:800;line-height:1.2;}
+.sales-filter-stat span{color:var(--text2);font-size:10px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;}
+.sales-filter-stat-revenue strong{color:var(--green);}
+.sales-filter-stat-sales strong{color:var(--accent);}
+.sales-filter-stat-registered strong{color:#7c3aed;}
+.sales-filter-stat-guests strong{color:var(--text2);}
+@media(max-width:900px){.sales-filter-bar{align-items:stretch;flex-direction:column;}.sales-filter-stats{max-width:none;}}
+@media(max-width:520px){.sales-filter-controls{align-items:stretch;flex-direction:column;}.sales-filter-field .form-input{width:100%;}.sales-filter-stats{grid-template-columns:repeat(2,minmax(0,1fr));}}
 
 /* Tags */
 .tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;}

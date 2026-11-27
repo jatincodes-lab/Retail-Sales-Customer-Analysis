@@ -34,7 +34,9 @@ router.get('/:id', auth, async (req, res) => {
       FROM sale s LEFT JOIN customer c ON s.customer_id=c.customer_id WHERE s.sale_id=$1`, [req.params.id]);
     if (!sales.length) return res.status(404).json({ error: 'Sale not found' });
     const { rows: items } = await pool.query(`
-      SELECT si.*,p.product_name FROM sale_item si JOIN product p ON si.product_id=p.product_id
+      SELECT si.*,p.product_name,c.category_name
+      FROM sale_item si JOIN product p ON si.product_id=p.product_id
+      JOIN category c ON p.category_id=c.category_id
       WHERE si.sale_id=$1 ORDER BY si.sale_item_id`, [req.params.id]);
     res.json({ ...sales[0], items });
   } catch (err) { sendError(res, err); }

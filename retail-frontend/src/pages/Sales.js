@@ -78,40 +78,36 @@ export default function Sales() {
         <button className="btn btn-primary" onClick={() => navigate('/new-sale')}>+ New Sale</button>
       </div>
 
-      {/* Date picker */}
-      <div className="card" style={{ marginBottom:16, padding:'14px 18px' }}>
-        <div style={{ display:'flex', alignItems:'center', gap:14, flexWrap:'wrap' }}>
-          <div>
-            <label style={{ fontSize:11, color:'#64748b', fontWeight:600, textTransform:'uppercase', display:'block', marginBottom:4 }}>
-              Filter by Date
-            </label>
-            <input type="date" className="form-input" style={{ width:'auto' }}
-              value={selectedDate} max={today}
-              onChange={handleDateChange} />
+      {/* Date filter and selected-day summary */}
+      <div className="sales-filter-bar">
+        <div className="sales-filter-controls">
+          <div className="sales-filter-field">
+            <label htmlFor="sales-filter-date">Filter by date</label>
+            <input id="sales-filter-date" type="date" className="form-input"
+              value={selectedDate} max={today} onChange={handleDateChange} />
           </div>
           {selectedDate && (
-            <LoadingButton className="btn btn-outline btn-sm" style={{ marginTop:20 }} onClick={run('clear-date', clearDate)} loading={isLoading('clear-date')} loadingLabel="Loading…">
-              ✕ Clear date
-            </LoadingButton>
-          )}
-          {selectedDate && (
-            <div style={{ display:'flex', gap:14, marginTop:16, flexWrap:'wrap' }}>
-              {[
-                { label:'Revenue',    val:fmt(dayRevenue), color:'#16a34a' },
-                { label:'Total Sales',val:sales.length,    color:'#2563eb' },
-                { label:'Registered', val:dayReg,          color:'#7c3aed' },
-                { label:'Guests',     val:dayGuests,       color:'#64748b' },
-              ].map(s => (
-                <div key={s.label} style={{ textAlign:'center' }}>
-                  <div style={{ fontWeight:800, fontSize:18, color:s.color }}>{s.val}</div>
-                  <div style={{ fontSize:11, color:'#94a3b8', textTransform:'uppercase', letterSpacing:'.05em' }}>{s.label}</div>
-                </div>
-              ))}
-            </div>
+            <LoadingButton className="btn btn-outline btn-sm sales-clear-date"
+              onClick={run('clear-date', clearDate)} loading={isLoading('clear-date')}
+              loadingLabel="Loading…">Clear date</LoadingButton>
           )}
         </div>
+        {selectedDate && (
+          <div className="sales-filter-stats" aria-label="Selected day sales summary">
+            {[
+              { label:'Revenue', val:fmt(dayRevenue), tone:'revenue' },
+              { label:'Total sales', val:sales.length, tone:'sales' },
+              { label:'Registered', val:dayReg, tone:'registered' },
+              { label:'Guests', val:dayGuests, tone:'guests' },
+            ].map(stat => (
+              <div key={stat.label} className={`sales-filter-stat sales-filter-stat-${stat.tone}`}>
+                <strong>{stat.val}</strong>
+                <span>{stat.label}</span>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
-
       {/* Daily chart (simple table) — only when no date selected */}
       {!selectedDate && (
         <div className="card" style={{ marginBottom:16 }}>
