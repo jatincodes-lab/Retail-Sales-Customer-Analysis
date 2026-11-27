@@ -19,9 +19,13 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
-  const logout = () => {
-    setUser(null);
-    api.post('/auth/logout').catch(() => {});
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+      setUser(null);
+    } catch {
+      // Keep the session active if the server could not clear its cookie.
+    }
   };
 
   return (

@@ -93,7 +93,7 @@ export default function Sidebar() {
       <div className="sidebar-account">
         <div className="account-avatar" aria-hidden="true">{initial}</div>
         <div className="account-copy"><strong>{user?.username || 'Account'}</strong><small>{role}</small></div>
-        <button type="button" className="logout-button" onClick={() => { logout(); navigate('/login'); }} aria-label="Log out" title="Log out">↗</button>
+        <button type="button" className="logout-button" onClick={logout} aria-label="Log out" title="Log out"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 3v9" /><path d="M7.1 5.7a8 8 0 1 0 9.8 0" /></svg></button>
       </div>
     </aside>
   );
