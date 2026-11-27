@@ -8,12 +8,10 @@ A full-stack web application for managing retail store operations including inve
 
 | Name | Role No. |
 |---|---|
-| Muhammad Umer Iqbal | L1F24BSCS0601 |
-| Arslan Aman | — |
+| Jatin | MCA250071 |
 
-**University:** University of Central Punjab (UCP), Lahore
-**Course:** Database Systems · Instructor: Muneeb Ali Muzaffar
-**Program:** BSCS · Spring 2026
+
+**University:** Future university
 
 ---
 
