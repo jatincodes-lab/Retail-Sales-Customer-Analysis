@@ -5,6 +5,10 @@ import LoadingButton from '../components/LoadingButton';
 import useActionLoading from '../hooks/useActionLoading';
 
 const fmt = n => `Rs. ${Number(n).toLocaleString()}`;
+const fmtDate = value => {
+  const [year, month, day] = String(value).slice(0, 10).split('-').map(Number);
+  return new Date(year, month - 1, day).toLocaleDateString();
+};
 
 export default function Sales() {
   const [sales,      setSales]      = useState([]);
@@ -117,9 +121,9 @@ export default function Sales() {
               <thead><tr><th>Date</th><th>Sales</th><th>Revenue</th><th>Registered</th><th>Guests</th></tr></thead>
               <tbody>
                 {dailyStats.slice(0,10).map(d => (
-                  <tr key={d.sale_day} style={{ cursor:'pointer' }}
-                    onClick={() => { setSelectedDate(d.sale_day); loadSales(d.sale_day); }}>
-                    <td style={{ color:'#2563eb', fontWeight:600 }}>{d.sale_day}</td>
+                  <tr key={String(d.sale_day).slice(0,10)} style={{ cursor:'pointer' }}
+                    onClick={() => { const date = String(d.sale_day).slice(0,10); setSelectedDate(date); loadSales(date); }}>
+                    <td style={{ color:'#2563eb', fontWeight:600 }}>{fmtDate(d.sale_day)}</td>
                     <td>{d.total_sales}</td>
                     <td style={{ fontWeight:700, color:'#16a34a' }}>{fmt(d.daily_revenue)}</td>
                     <td style={{ color:'#7c3aed' }}>{d.registered_customers}</td>

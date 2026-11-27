@@ -20,7 +20,16 @@ router.get('/', auth, async (req, res) => {
 
 router.get('/daily', auth, async (req, res) => {
   try {
-    const { rows } = await pool.query('SELECT * FROM vw_daily_sales ORDER BY sale_day DESC LIMIT 60');
+    const { rows } = await pool.query(`
+      SELECT to_char(sale_date::date, 'YYYY-MM-DD') AS sale_day,
+             COUNT(*) AS total_sales,
+             COALESCE(SUM(total_amount), 0) AS daily_revenue,
+             COUNT(*) FILTER (WHERE customer_id IS NOT NULL) AS registered_customers,
+             COUNT(*) FILTER (WHERE customer_id IS NULL) AS guest_sales
+      FROM sale
+      GROUP BY sale_date::date
+      ORDER BY sale_date::date DESC
+      LIMIT 60`);
     res.json(rows);
   } catch (err) { sendError(res, err); }
 });
