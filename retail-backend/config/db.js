@@ -2,6 +2,10 @@ require('dotenv').config();
 const fs = require('node:fs');
 const { Pool } = require('pg');
 
+const sslCa = process.env.DB_SSL_CA_BASE64
+  ? Buffer.from(process.env.DB_SSL_CA_BASE64, 'base64').toString('utf8')
+  : process.env.DB_SSL_CA ? fs.readFileSync(process.env.DB_SSL_CA, 'utf8') : undefined;
+
 const pool = new Pool({
   ...(process.env.DATABASE_URL
     ? { connectionString: process.env.DATABASE_URL }
@@ -18,7 +22,7 @@ const pool = new Pool({
   ...(process.env.DB_SSL === 'true' ? {
     ssl: {
       rejectUnauthorized: true,
-      ...(process.env.DB_SSL_CA ? { ca: fs.readFileSync(process.env.DB_SSL_CA, 'utf8') } : {}),
+      ...(sslCa ? { ca: sslCa } : {}),
     },
   } : {}),
 });
