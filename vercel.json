@@ -1,0 +1,23 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "services": {
+    "retail-backend": {
+      "root": "retail-backend",
+      "framework": "express"
+    },
+    "retail-frontend": {
+      "root": "retail-frontend",
+      "framework": "create-react-app"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": { "service": "retail-backend" }
+    },
+    {
+      "source": "/(.*)",
+      "destination": { "service": "retail-frontend" }
+    }
+  ]
+}

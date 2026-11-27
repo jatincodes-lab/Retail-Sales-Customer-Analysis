@@ -64,4 +64,5 @@ if (require.main === module) {
   });
 }
 
-module.exports = { app, start };
+module.exports = app;
+module.exports.start = start;
