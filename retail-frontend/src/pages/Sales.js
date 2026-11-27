@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import LoadingButton from '../components/LoadingButton';
 import useActionLoading from '../hooks/useActionLoading';
 
@@ -17,7 +16,6 @@ export default function Sales() {
   const [detailError, setDetailError] = useState('');
   const [dateError, setDateError] = useState('');
   const { run, isLoading } = useActionLoading();
-  const { user } = useAuth();
   const navigate  = useNavigate();
   const today     = new Date().toISOString().split('T')[0];
 
@@ -77,9 +75,7 @@ export default function Sales() {
           <h1 className="page-title">Sales History</h1>
           <p className="page-sub">{sales.length} sales {selectedDate ? `on ${selectedDate}` : '(all time)'}</p>
         </div>
-        {user?.role !== 'admin' && (
-          <button className="btn btn-primary" onClick={() => navigate('/new-sale')}>+ New Sale</button>
-        )}
+        <button className="btn btn-primary" onClick={() => navigate('/new-sale')}>+ New Sale</button>
       </div>
 
       {/* Date picker */}

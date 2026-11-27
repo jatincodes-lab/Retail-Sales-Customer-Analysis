@@ -41,7 +41,6 @@ router.get('/:id', auth, async (req, res) => {
 });
 
 router.post('/', auth, async (req, res) => {
-  if (req.user.role === 'admin') return res.status(403).json({ error: 'Admin cannot process sales' });
   const { customer_id, items } = req.body;
   if (customer_id != null && !positiveInteger(customer_id)) return res.status(400).json({ error: 'Invalid customer id' });
   if (!Array.isArray(items) || items.length === 0 || items.length > 100)

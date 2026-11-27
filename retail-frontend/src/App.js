@@ -99,8 +99,8 @@ function Layout() {
           {/* Everyone — sales */}
           <Route path="/sales"      element={<Sales />} />
 
-          {/* Cashier + Manager — new sale */}
-          <Route path="/new-sale"   element={<RequireRole allowed={['cashier','manager']}><NewSale /></RequireRole>} />
+          {/* Everyone — new sale */}
+          <Route path="/new-sale"   element={<RequireRole allowed={['admin','cashier','manager']}><NewSale /></RequireRole>} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />

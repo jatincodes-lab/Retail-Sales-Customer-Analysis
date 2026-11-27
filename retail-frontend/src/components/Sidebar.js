@@ -11,6 +11,7 @@ const NAV = {
     { path: '/categories', label: 'Categories', icon: 'categories' },
     { path: '/suppliers', label: 'Suppliers', icon: 'suppliers' },
     { section: 'Sales' },
+    { path: '/new-sale', label: 'New sale', icon: 'sales' },
     { path: '/customers', label: 'Customers', icon: 'customers' },
     { path: '/sales', label: 'Sales history', icon: 'sales' },
     { section: 'People' },
